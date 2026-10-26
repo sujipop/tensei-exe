@@ -166,7 +166,7 @@ main{padding-top:var(--hh);min-height:100svh}
 .vscene .lines{background:rgba(20,8,31,.92);border:1px solid var(--mint);border-left:1px solid var(--mint);padding:16px 22px 18px;min-height:3.6em;align-items:center;justify-items:center;box-shadow:0 0 0 3px var(--ink)}
 .vscene.vscene .ch{color:var(--mint)}
 .vscene .ln{font-family:"Share Tech Mono",ui-monospace,Menlo,monospace;font-weight:400;text-transform:uppercase;letter-spacing:.08em;color:var(--mint);font-size:clamp(.95rem,1.7vw,1.5rem);line-height:1.35;transform:none;transition:opacity .25s;text-align:center}
-.vscene .ln.done{transform:none}
+.vscene .ln{visibility:hidden}.vscene .ln.on{visibility:visible}.vscene .ln.done,.vscene .ln:not(.on){opacity:0;transition:none}
 .vscene .ln em{background:none;color:var(--yellow);padding:0}
 .vscene .ln::before{content:"> ";color:var(--pink)}
 .vscene .ln.typing::after{content:"\2588";margin-left:3px;color:var(--mint);animation:blink .6s steps(2) infinite}
@@ -747,7 +747,7 @@ function dotsHTML(){var o="";for(var i=0;i<100;i++)o+="<i></i>";return '<div cla
 var SCENES=[
  {id:"hero",cls:"hero s-ink",h:"170vh",label:"Start"},
  {id:"beam",cls:"s-ink vscene",h:"calc(100svh - var(--hh))",label:"The Beam",tag:"01 // The Beam",video:"beam",lines:["A <em>Beam</em> from outer space","destroyed all humanity."]},
- {id:"sujicorp",cls:"s-ink vscene",h:"calc(100svh - var(--hh))",label:"SujiCorp",tag:"02 // SujiCorp",video:"sujicorp",lines:["SujiCorp retrieved undamaged human brains.","Gave humanity a new life.","Through the <em>TENSEI.EXE</em> Protocol."]},
+ {id:"sujicorp",cls:"s-ink vscene",h:"calc(100svh - var(--hh))",label:"SujiCorp",tag:"02 // SujiCorp",video:"sujicorp",lines:["SujiCorp retrieved undamaged brains.","Gave humanity a new life.","Through the <em>TENSEI.EXE</em> Protocol."]},
  {id:"fin",cls:"fin s-ink",h:"230vh",label:"Rebirth",fin:true}
 ];
 
@@ -820,11 +820,11 @@ function renderLore(){
     if(reduce){w.forEach(function(x){x[0].nodeValue=x[1]});return}
     var k=0;el.classList.add("typing");w.forEach(function(x){x[0].nodeValue=""});
     el._iv=setInterval(function(){
-      k+=2;var left=k;
+      k+=1;var left=k;
       w.forEach(function(x){var t=x[1],m=Math.max(0,Math.min(t.length,left));left-=t.length;
         var o=t.slice(0,m);if(m<t.length&&m>0&&left<=0&&t[m]!==" ")o+=G[Math.floor(Math.random()*G.length)];x[0].nodeValue=o});
       if(k>=tot+1){clearInterval(el._iv);w.forEach(function(x){x[0].nodeValue=x[1]});el.classList.remove("typing")}
-    },26);
+    },48);
   }
   svs.forEach(function(o){
     var v=o.v;
