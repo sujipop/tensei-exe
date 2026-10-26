@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#14081f">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Hanken+Grotesk:wght@400;600;800&family=Noto+Sans+JP:wght@900&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Hanken+Grotesk:wght@400;600;800&family=Noto+Sans+JP:wght@900&display=swap"></noscript>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Share+Tech+Mono&family=Hanken+Grotesk:wght@400;600;800&family=Noto+Sans+JP:wght@900&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Hanken+Grotesk:wght@400;600;800&family=Noto+Sans+JP:wght@900&display=swap"></noscript>
 <style>
 :root{
   --ink:#14081f; --ink2:#241238; --pink:#ff6de0; --purple:#c66eff; --mint:#6effdb; --yellow:#ffe76e; --white:#fffaf0;
@@ -137,7 +137,7 @@ main{padding-top:var(--hh);min-height:100svh}
 .hero .rec{right:clamp(26px,4vw,52px);display:flex;gap:10px;align-items:center;color:var(--mint)}
 .hero .rec b{width:9px;height:9px;background:var(--pink);animation:blink 1s steps(2) infinite}
 @keyframes blink{50%{opacity:0}}
-.hero .kanji{position:absolute;left:clamp(14px,3vw,40px);bottom:clamp(70px,10vh,120px);z-index:2;writing-mode:vertical-rl;font-size:clamp(2rem,6vw,5rem);line-height:1;color:var(--purple);text-shadow:3px 3px 0 var(--ink);opacity:clamp(0,calc(1.7 - var(--p) * 4.2),1)}
+.hero .kanji{position:absolute;right:clamp(26px,4vw,52px);top:clamp(70px,9vh,110px);z-index:2;writing-mode:vertical-rl;font-size:clamp(2rem,5vw,4.2rem);line-height:1;color:var(--purple);text-shadow:3px 3px 0 var(--ink);opacity:clamp(0,calc(1.7 - var(--p) * 4.2),1)}
 .hero .plates{position:absolute;right:clamp(26px,5vw,80px);bottom:clamp(70px,13vh,150px);z-index:3;display:grid;gap:10px;justify-items:end;opacity:clamp(0,calc((var(--p) - .7) * 6),1)}
 .hero .plate{display:flex;gap:10px;align-items:center;background:var(--ink);padding:9px 14px 9px 10px;font:700 clamp(.8rem,1.6vw,1.1rem)/1 var(--display);letter-spacing:.18em;text-transform:uppercase;clip-path:polygon(10px 0,100% 0,100% 100%,0 100%,0 10px)}
 .hero .plate b{width:12px;height:12px;display:block}.hero .plate.l b{background:var(--pink)}.hero .plate.r b{background:var(--yellow)}
@@ -158,7 +158,20 @@ main{padding-top:var(--hh);min-height:100svh}
   .hero.hasvid .cue{display:none}
   .hero .kanji{display:none}
 }
-}
+
+/* transmission-style story text */
+.vscene .txt{left:50%;right:auto;transform:translateX(-50%);width:min(780px,90vw);max-width:none;text-align:center}
+.vscene .ch{font-family:"Share Tech Mono",ui-monospace,Menlo,monospace;background:var(--ink);color:var(--mint);border:1px solid var(--mint);border-bottom:0;padding:6px 12px;font-size:.66rem;letter-spacing:.22em}
+.vscene .ch::before{display:inline-block;content:"";width:8px;height:8px;margin-right:9px;background:var(--pink);animation:blink 1s steps(2) infinite}
+.vscene .lines{background:rgba(20,8,31,.92);border:1px solid var(--mint);border-left:1px solid var(--mint);padding:16px 22px 18px;min-height:3.6em;align-items:center;justify-items:center;box-shadow:0 0 0 3px var(--ink)}
+.vscene .ch{font-size:0}.vscene .ch::after{content:"INCOMING TRANSMISSION";font-size:.66rem}
+.vscene .ln{font-family:"Share Tech Mono",ui-monospace,Menlo,monospace;font-weight:400;text-transform:uppercase;letter-spacing:.08em;color:var(--mint);font-size:clamp(.95rem,1.7vw,1.5rem);line-height:1.35;transform:none;transition:opacity .25s;text-align:center}
+.vscene .ln.done{transform:none}
+.vscene .ln em{background:none;color:var(--yellow);padding:0}
+.vscene .ln::before{content:"> ";color:var(--pink)}
+.vscene .ln.typing::after{content:"\2588";margin-left:3px;color:var(--mint);animation:blink .6s steps(2) infinite}
+.vscene .ln.on:not(.typing)::after{content:"\2588";margin-left:3px;color:var(--mint);animation:blink 1s steps(2) infinite}
+@media (max-width:700px){.vscene .txt{left:0;transform:none;width:auto;right:0;padding:0 14px}.vscene .ln{font-size:clamp(.95rem,4.4vw,1.3rem)}}
 .hero .ring{position:absolute;left:50%;top:50%;width:min(90vw,90vh);aspect-ratio:1;margin:calc(min(90vw,90vh) / -2) 0 0 calc(min(90vw,90vh) / -2);border:3px dashed var(--purple);border-radius:50%;transform:rotate(calc(var(--p) * 240deg));opacity:.55}
 .hero .ring.b{width:min(62vw,62vh);margin:calc(min(62vw,62vh) / -2) 0 0 calc(min(62vw,62vh) / -2);border-color:var(--mint);transform:rotate(calc(var(--p) * -300deg));border-style:solid;border-width:2px;opacity:.35}
 .cue{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);font:600 .8rem/1 var(--display);letter-spacing:.3em;color:var(--white);z-index:3;text-align:center;opacity:clamp(0,calc(1 - var(--p) * 5),1)}
@@ -565,7 +578,7 @@ body{background:var(--bg);color:var(--ink)}
 .fin .rb em{background:var(--ink);color:var(--pink);padding:0 .12em}
 .fin .jp.big,.fin .big{color:var(--purple)}
 .rail button{border-color:var(--ink)}
-.s-ink .ch,.vscene .ch{color:var(--ink)}
+.s-ink .ch{color:var(--ink)}
 
 /* ---- NFT: one big image-led hero ---- */
 .nfthero2{position:relative;background:var(--bg);overflow:hidden;min-height:calc(100svh - var(--hh));display:flex;flex-direction:column;padding:clamp(18px,3vw,34px) 0 clamp(10px,2vw,24px)}
@@ -745,7 +758,7 @@ function renderLore(){
     if(s.id==="hero"){
       var hv=SITE.heroVideo;
       html+='<section class="scene hero'+(hv?' hasvid':'')+'" data-i="'+i+'" style="--h:'+(hv?'calc(100svh - var(--hh))':s.h)+'"><div class="stick">'+(hv?'<video class="hv" muted playsinline autoplay preload="auto" poster="'+esc(SITE.heroPoster||"")+'" src="'+esc((SITE.heroVideoMobile&&matchMedia("(max-width:700px)").matches)?SITE.heroVideoMobile:hv)+'" aria-hidden="true"></video><div class="hud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="tick" id="tick">T 00.0 / 06.0</div><div class="rec" aria-hidden="true"><b></b>LIVE FEED // SECTOR 07</div>':'')+'<div class="ring"></div><div class="ring b"></div><div class="big-jp jp" aria-hidden="true">転生</div>'+STARS(40,5)+
-        '<div class="hero-in">'+(hv?'<span class="htag">SujiCorp // Archive 001</span>':'')+'<h1 class="glitch">TENSEI<span>.EXE</span></h1><p class="sub">Reborn in a broken world</p></div>'+(hv?'<div class="kanji jp" aria-hidden="true">転生</div><div class="plates"><div class="plate l"><b></b>Lyra <small>// Reborn</small></div><div class="plate r"><b></b>Ren <small>// Reborn</small></div></div><div class="pbar2"><span></span></div>':'')+
+        '<div class="hero-in">'+(hv?'<span class="htag">SujiCorp // Archive 001</span>':'')+'<h1 class="glitch">TENSEI<span>.EXE</span></h1><p class="sub">Reborn in a broken world</p></div>'+(hv?'<div class="kanji jp" aria-hidden="true">転生</div><div class="pbar2"><span></span></div>':'')+
         '<div class="cue">SCROLL</div><div class="strip" aria-hidden="true"><div>'+new Array(14).join("REBORN IN A BROKEN WORLD &nbsp;//&nbsp; 転生 &nbsp;//&nbsp; ")+'</div></div></div></section>';
     } else if(s.fin){
       html+='<section class="scene fin s-ink" data-i="'+i+'" style="--h:'+s.h+'"><div class="stick"><div class="ring"></div><div class="big jp" aria-hidden="true">転生</div>'+
@@ -798,6 +811,20 @@ function renderLore(){
     var ls=sc.querySelectorAll(".ln"),n=ls.length;if(!n)return;
     var idx=p<.03?-1:Math.min(n-1,Math.floor((p-.03)/((1-.03)/n)));
     for(var j=0;j<n;j++){var c=ls[j].classList;c.toggle("on",j===idx);c.toggle("done",j<idx)}
+    if(sc._ix!==idx){sc._ix=idx;if(idx>=0)typeLine(ls[idx])}
+  }
+  var G="01#%/<>_+=";
+  function typeLine(el){
+    if(!el._t){var w=[],tw=document.createTreeWalker(el,4),nd;while(nd=tw.nextNode())w.push([nd,nd.nodeValue]);el._t=w}
+    clearInterval(el._iv);var w=el._t,tot=0;w.forEach(function(x){tot+=x[1].length});
+    if(reduce){w.forEach(function(x){x[0].nodeValue=x[1]});return}
+    var k=0;el.classList.add("typing");w.forEach(function(x){x[0].nodeValue=""});
+    el._iv=setInterval(function(){
+      k+=2;var left=k;
+      w.forEach(function(x){var t=x[1],m=Math.max(0,Math.min(t.length,left));left-=t.length;
+        var o=t.slice(0,m);if(m<t.length&&m>0&&left<=0&&t[m]!==" ")o+=G[Math.floor(Math.random()*G.length)];x[0].nodeValue=o});
+      if(k>=tot+1){clearInterval(el._iv);w.forEach(function(x){x[0].nodeValue=x[1]});el.classList.remove("typing")}
+    },26);
   }
   svs.forEach(function(o){
     var v=o.v;
