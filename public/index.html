@@ -566,6 +566,29 @@ body{background:var(--bg);color:var(--ink)}
 .fin .jp.big,.fin .big{color:var(--purple)}
 .rail button{border-color:var(--ink)}
 .s-ink .ch,.vscene .ch{color:var(--ink)}
+
+/* ---- NFT: one big image-led hero ---- */
+.nfthero2{position:relative;background:var(--bg);overflow:hidden;min-height:calc(100svh - var(--hh));display:flex;flex-direction:column;padding:clamp(18px,3vw,34px) 0 clamp(10px,2vw,24px)}
+.nfthero2>*{position:relative;z-index:1}
+.nfthero2>.circ{position:absolute;z-index:0}
+.nh-top{display:flex;align-items:center;justify-content:space-between;gap:16px 24px;flex-wrap:wrap;padding:0 clamp(18px,5vw,64px)}
+.chips{display:flex;gap:10px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:baseline;gap:.6em;background:var(--ink);color:var(--white);padding:11px 16px;font:600 .8rem/1 var(--display);letter-spacing:.2em;text-transform:uppercase;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+.chip b{font:700 clamp(1.2rem,2.4vw,1.7rem)/1 var(--display);letter-spacing:.04em;color:var(--mint)}
+.chip:nth-child(2) b{color:var(--yellow)}.chip:nth-child(3) b{color:var(--pink)}
+.nh-act{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.nfthero2 .mintbig{font-size:clamp(1rem,1.7vw,1.35rem);padding:15px 22px}
+.nh-band{position:absolute;left:-100vw;right:-100vw;top:50%;height:62%;transform:translateY(-50%);background:var(--yellow);border-top:5px solid var(--ink);border-bottom:5px solid var(--ink);pointer-events:none}
+.nfthero2 .hudf{flex:1;display:flex;align-items:center;position:relative;margin-top:clamp(6px,2vh,24px)}
+.nfthero2 .hudf>.deck{position:relative;z-index:1}
+.nfthero2 .deck.curve{--cw:clamp(250px,min(58vh,40vw),600px);width:100%}
+@media (max-width:700px){
+  .nh-top{flex-direction:column;align-items:stretch}
+  .chip{padding:10px 12px;font-size:.66rem;flex:1;justify-content:center}
+  .nh-act{justify-content:space-between}
+  .nfthero2 .deck.curve{--cw:min(84vw,50svh)}
+  .nh-band{height:58%}
+}
 </style>
 </head>
 <body>
@@ -938,18 +961,19 @@ function deckSection(cls,title,sub,items,id,sec,seed,col,bo,fc){
     '<div class="hudf nohc">'+hudCorners()+'<div class="deck curve stack" id="'+id+'" data-n="'+n+'" tabindex="0" aria-label="'+esc(title)+' (scrollable, loops)">'+cards+'</div></div></section>';
 }
 function mintBtn(){return '<span class="mintsh"><a class="mintbig" href="'+esc(SITE.mint)+'" target="_blank" rel="noopener">Mint a Tensei <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3"/></svg></a></span>'}
+function heroDeck(items){
+  var n=items.length,cards="",k;
+  for(k=0;k<3;k++)items.forEach(function(c,i){cards+=cardHTML(c,i,k!==1)});
+  return '<section class="nfthero2 grid-bg">'+circuit(1200,760,14,5,"var(--purple)",.4,"var(--mint)")+'<h1 class="sr">Tensei.exe NFT collection</h1>'+
+    '<div class="nh-top"><div class="chips"><span class="chip"><b>2,222</b>Supply</span><span class="chip"><b>250</b>Traits</span><span class="chip"><b>Solana</b>Chain</span></div>'+
+    '<div class="nh-act">'+mintBtn()+'<div class="arrows"><button type="button" data-d="-1" data-t="deck1" aria-label="Previous">&#9664;</button><button type="button" data-d="1" data-t="deck1" aria-label="Next">&#9654;</button></div></div></div>'+
+    '<div class="hudf nohc"><div class="nh-band" aria-hidden="true"></div>'+hudCorners()+'<div class="deck curve stack" id="deck1" data-n="'+n+'" tabindex="0" aria-label="Tensei characters (scrollable, loops)">'+cards+'</div></div></section>';
+}
 function renderNFT(){
   setActive("nft");setTitle("NFT");
   var T=window.NFT_TENSEI||[],O=window.NFT_ONE_OF_ONE||[];
   app.innerHTML='<div class="pg">'+
-   '<section class="nfthero grid-bg">'+circuit(1200,760,14,5,"var(--purple)",.55,"var(--mint)")+'<i class="sweep"></i><div class="chipdeco" style="--p:1">'+chipSVG()+'</div>'+
-   '<span class="tag">Solana // Art-first collection</span><h1 class="h2" style="margin-top:16px">Tensei.exe<b>NFT Collection</b></h1>'+
-   '<p class="lead">2,222 cyborgs. One broken world.</p>'+mintBtn()+
-   '<div class="term"><p>&gt; BOOT TENSEI.EXE ........ <b>OK</b></p><p>&gt; NEUROCHIP POP ........ <b>ONLINE</b></p><p>&gt; MINDS LOADED ........ <b>2222</b><span class="cur"></span></p></div>'+
-   '<div class="keys"><div class="key"><b>2,222</b><span>Unique cybernetic characters</span></div><div class="key"><b>~250</b><span>Traits across two genders</span></div><div class="key"><b>SOL</b><span>Created on Solana</span></div><div class="key"><b>0</b><span>Roadmaps. No promised utility. Just art.</span></div></div>'+
-   '<p style="margin-top:26px;font:600 1.05rem/1.4 var(--display);letter-spacing:.06em;max-width:56ch;text-transform:uppercase">Anime style. Cyberpunk visuals. Every character adds to the lore of the Tensei.exe universe.</p></section>'+
-   '<div class="hazard"></div>'+
-   deckSection("y","Tensei Characters","Drag, swipe or use the arrows",T,"deck1","SEC_01 // CHARACTERS",21,"var(--ink)",.22,"var(--ink)")+
+   heroDeck(T)+
    '<div class="hazard"></div>'+
    deckSection("p","Tensei 1/1 Characters","Hand-made. One of a kind.",O,"deck2","SEC_02 // ONE_OF_ONE",33,"var(--ink)",.25,"var(--yellow)")+
    '<section class="cta-band">'+circuit(1200,420,8,47,"var(--ink)",.22,"var(--white)")+'<h2 class="h2">Get your Tensei</h2>'+mintBtn()+'</section>'+footHTML()+'</div>';
