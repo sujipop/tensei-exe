@@ -495,6 +495,77 @@ section>.circ,section>.sweep,section>.chipdeco{position:absolute;z-index:0}
   .lines{display:block}.ln{opacity:1!important;transform:none!important;margin-bottom:.4em}
   .fl .bob{animation:none}
 }
+
+.term{color:var(--ink)}.term b{color:var(--purple)}
+.showhead{color:var(--white)}
+
+/* ---- series: animated banner UI ---- */
+.banner{padding-bottom:calc(clamp(18px,3.4vw,52px) + 34px)}
+.banner img{animation:kb 28s ease-in-out infinite alternate;transform-origin:60% 50%}
+.banner:hover img{transform:none;animation-duration:14s}
+@keyframes kb{from{transform:scale(1.02) translate3d(0,0,0)}to{transform:scale(1.11) translate3d(-1.6%,-1%,0)}}
+.banner::before{content:"";position:absolute;inset:0;background:var(--ink);z-index:6;transform-origin:right center;transition:transform .95s cubic-bezier(.7,0,.2,1)}
+.banner.in::before{transform:scaleX(0)}
+.banner .ov>*{opacity:0;transform:translateY(26px);transition:opacity .6s,transform .75s cubic-bezier(.2,.8,.2,1)}
+.banner.in .ov>*{opacity:1;transform:none}
+.banner.in .ov>:nth-child(1){transition-delay:.55s}.banner.in .ov>:nth-child(2){transition-delay:.68s}.banner.in .ov>:nth-child(3){transition-delay:.81s}.banner.in .ov>:nth-child(4){transition-delay:.94s}
+.banner .ov{transform:translate(calc(var(--mx,0) * 12px),calc(var(--my,0) * 8px));transition:transform .25s ease-out}
+.bhud{position:absolute;inset:14px 14px 48px;pointer-events:none;z-index:3;transition:inset .35s cubic-bezier(.2,.8,.2,1),transform .25s ease-out;transform:translate(calc(var(--mx,0) * -6px),calc(var(--my,0) * -4px))}
+.banner:hover .bhud{inset:24px 24px 58px}
+.bhud i{position:absolute;width:clamp(22px,3vw,40px);height:clamp(22px,3vw,40px);border:0 solid var(--mint)}
+.bhud i:nth-child(1){left:0;top:0;border-width:3px 0 0 3px}.bhud i:nth-child(2){right:0;top:0;border-width:3px 3px 0 0}
+.bhud i:nth-child(3){left:0;bottom:0;border-width:0 0 3px 3px}.bhud i:nth-child(4){right:0;bottom:0;border-width:0 3px 3px 0}
+.scan{position:absolute;left:0;right:0;top:0;height:3px;background:var(--mint);opacity:.8;z-index:3;pointer-events:none;animation:scnb 7s linear infinite}
+@keyframes scnb{from{top:-1%}to{top:101%}}
+.tc{position:absolute;left:clamp(26px,4vw,52px);top:clamp(24px,3.4vw,44px);z-index:4;background:var(--ink);color:var(--mint);font:600 .72rem/1 var(--display);letter-spacing:.2em;padding:8px 10px;display:flex;gap:9px;align-items:center}
+.tc b{width:8px;height:8px;background:var(--pink);animation:blink 1s steps(2) infinite}
+.mq{position:absolute;left:0;right:0;bottom:0;height:32px;background:var(--ink);color:var(--c);overflow:hidden;display:flex;align-items:center;z-index:4}
+.mq div{display:flex;white-space:nowrap;animation:mqm 32s linear infinite;font:700 .72rem/1 var(--display);letter-spacing:.3em;text-transform:uppercase}
+.mq span{padding-right:1.4em}
+@keyframes mqm{to{transform:translateX(-50%)}}
+.showhead>img{animation:kb 30s ease-in-out infinite alternate}
+.showhead .bhud{inset:14px}
+/* episode cards */
+.epgrid .ep{opacity:0}
+.epgrid.in .ep{opacity:1;animation:epin .6s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--i,0) * 60ms)}
+@keyframes epin{from{opacity:0;transform:translateY(26px) rotate(1.5deg)}to{opacity:1;transform:none}}
+.ep .th::after{content:"";position:absolute;left:0;right:0;top:-4px;height:3px;background:var(--mint);opacity:0;z-index:2}
+.ep:hover .th::after{opacity:1;animation:scnb 1.5s linear infinite}
+@media (prefers-reduced-motion:reduce){
+  .banner::before{display:none}.banner .ov>*{opacity:1;transform:none}.banner img,.showhead>img,.scan,.mq div,.ep:hover .th::after{animation:none}.epgrid .ep{opacity:1;animation:none!important}
+}
+
+/* ================= light theme: cool grey base, ink panels, vibrant accents ================= */
+:root{--bg:#e6e7ec;--bg2:#d6d8e0;--line:rgba(20,8,31,.09)}
+body{background:var(--bg);color:var(--ink)}
+.top{background:var(--bg);border-bottom:3px solid var(--ink)}
+.top::after{content:"";position:absolute;left:0;bottom:-9px;width:clamp(90px,16vw,220px);height:6px;background:var(--pink)}
+.brand{color:var(--ink)}
+.brand b{background:var(--pink);color:var(--ink);padding:0 .12em;margin-left:.06em}
+.nav a{color:var(--ink)}
+.nav a:hover{background:var(--bg2)}
+.nav a.on{background:var(--yellow);color:var(--ink)}
+.grid-bg{background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px)}
+.btn.ghost{color:var(--ink);box-shadow:inset 0 0 0 3px var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--white)}
+.pph .btn.ghost,.showhead .btn.ghost,.hero .btn.ghost{color:var(--white);box-shadow:inset 0 0 0 3px var(--white)}
+.pph .btn.ghost:hover,.showhead .btn.ghost:hover,.hero .btn.ghost:hover{background:var(--white);color:var(--ink)}
+.foot{background:var(--bg);border-top:3px solid var(--ink);color:var(--ink)}
+.foot a:hover{color:var(--ink);background:var(--yellow)}
+.nfthero,.chero{background:var(--bg)}
+.nfthero .h2,.chero .h2{color:var(--ink)}
+.nfthero .h2 b,.chero .h2 b{background:var(--ink);color:var(--pink);padding:0 .1em;display:inline-block;margin-top:.06em}
+.nfthero .lead{color:var(--ink);background:var(--yellow);display:inline-block;padding:8px 12px}
+.nfthero .key{color:var(--white)}
+.role{color:var(--ink);background:var(--yellow);display:inline-block;padding:8px 12px}
+.bio p{color:var(--ink)}
+.bio p b{background:var(--ink);color:var(--mint);padding:0 .2em}
+.fin .stick{background:var(--bg)}
+.fin .rb{color:var(--ink)}
+.fin .rb em{background:var(--ink);color:var(--pink);padding:0 .12em}
+.fin .jp.big,.fin .big{color:var(--purple)}
+.rail button{border-color:var(--ink)}
+.s-ink .ch,.vscene .ch{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -911,19 +982,39 @@ function renderSeries(){
   app.innerHTML='<div class="pg"><div class="banners">'+SERIES.map(function(s,i){
     return '<a class="banner '+(s.textPos==="right"?"br":"")+'" href="#/series/'+esc(s.id)+'" style="--c:'+esc(s.color||PAL[i%4])+';--posm:'+esc(s.bannerPosM||s.bannerPos||"50% 50%")+';--zm:'+esc(s.bannerZoomM||1)+'">'+
       '<img src="'+esc(s.banner||s.poster)+'" alt="" style="object-position:'+esc(s.bannerPos||"50% 50%")+'" '+(i?'loading="lazy"':'')+'>'+
+      '<div class="bhud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="scan" aria-hidden="true"></div><div class="tc" aria-hidden="true"><b></b><span>REC 00:00:00</span></div>'+
       '<span class="eps tag">'+s.episodes.length+' episodes</span>'+
-      '<div class="ov"><span class="num">0'+(i+1)+' // SERIES</span><h2>'+esc(s.title)+'</h2><p>'+esc(s.oneLiner||s.tagline||"")+'</p><span class="go">Watch now <span aria-hidden="true">&#9654;</span></span></div></a>';
+      '<div class="ov"><span class="num">0'+(i+1)+' // SERIES</span><h2>'+esc(s.title)+'</h2><p>'+esc(s.oneLiner||s.tagline||"")+'</p><span class="go">Watch now <span aria-hidden="true">&#9654;</span></span></div>'+
+      '<div class="mq" aria-hidden="true"><div>'+mqText(s)+mqText(s)+'</div></div></a>';
   }).join("")+'</div>'+footHTML()+'</div>';
+  var bs=$$(".banner");
+  if("IntersectionObserver"in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}})},{threshold:.22});
+    bs.forEach(function(b){io.observe(b)});cleanups.push(function(){io.disconnect()});
+  }else bs.forEach(function(b){b.classList.add("in")});
+  bs.forEach(function(b){
+    b.addEventListener("pointermove",function(e){if(e.pointerType!=="mouse")return;var r=b.getBoundingClientRect();b.style.setProperty("--mx",((e.clientX-r.left)/r.width*2-1).toFixed(2));b.style.setProperty("--my",((e.clientY-r.top)/r.height*2-1).toFixed(2))});
+    b.addEventListener("pointerleave",function(){b.style.setProperty("--mx",0);b.style.setProperty("--my",0)});
+  });
+  var t0=Date.now(),tcs=$$(".tc span");
+  var iv=setInterval(function(){var t=Math.floor((Date.now()-t0)/1000),m=pad(Math.floor(t/60)%60,2),sec=pad(t%60,2);tcs.forEach(function(x){x.textContent="REC 00:"+m+":"+sec})},1000);
+  cleanups.push(function(){clearInterval(iv)});
 }
+function mqText(s){var g=(s.genres||[]).join(" // ");return '<span>'+esc(s.title)+' // '+esc(g)+' // '+s.episodes.length+' episodes // tensei.exe //</span>'}
 function renderShow(s){
   setActive("series");setTitle(s.title);
   var first=0;for(var i=0;i<s.episodes.length;i++){if(s.episodes[i].video){first=i;break}}
-  app.innerHTML='<div class="pg"><section class="showhead" style="--c:'+esc(s.color||PAL[0])+'"><img src="'+esc(s.banner||s.poster)+'" alt="" style="object-position:'+esc(s.bannerPos||"50% 50%")+'"><div class="in">'+
+  app.innerHTML='<div class="pg"><section class="showhead" style="--c:'+esc(s.color||PAL[0])+'"><img src="'+esc(s.banner||s.poster)+'" alt="" style="object-position:'+esc(s.bannerPos||"50% 50%")+'"><div class="bhud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="scan" aria-hidden="true"></div><div class="in">'+
     '<a class="back" href="#/series">&#9664; All series</a><div class="genres">'+(s.genres||[]).map(function(g){return '<span>'+esc(g)+'</span>'}).join("")+'</div>'+
     '<h1>'+esc(s.title)+'</h1><p>'+esc(s.description||s.tagline||"")+'</p><p style="margin-top:20px"><a class="btn" data-watch href="#/watch/'+esc(s.id)+'/'+(first+1)+'">&#9654; Watch episode '+(first+1)+'</a></p></div></section>'+
     '<section class="epsec"><h2 class="h2">Episodes</h2><div class="epgrid">'+s.episodes.map(function(e,i){
-      return '<a class="ep" data-watch href="#/watch/'+esc(s.id)+'/'+(i+1)+'" aria-label="Play '+esc(epTitle(e,i))+'">'+thumbHTML(s,e,i)+(e.video?'<span class="play"></span>':'<span class="soon">Soon</span>')+
+      return '<a class="ep" style="--i:'+i+'" data-watch href="#/watch/'+esc(s.id)+'/'+(i+1)+'" aria-label="Play '+esc(epTitle(e,i))+'">'+thumbHTML(s,e,i)+(e.video?'<span class="play"></span>':'<span class="soon">Soon</span>')+
         '<div class="lab"><span>EP '+pad(i+1,2)+'</span><span>'+esc(e.length||"")+'</span></div></a>'}).join("")+'</div></section>'+footHTML()+'</div>';
+  var eg=$(".epgrid");
+  if(eg){
+    if("IntersectionObserver"in window){var io2=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){eg.classList.add("in");io2.disconnect()}})},{threshold:.08});io2.observe(eg);cleanups.push(function(){io2.disconnect()})}
+    else eg.classList.add("in");
+  }
 }
 
 /* ---------- PLAYER ---------- */
