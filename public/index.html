@@ -529,10 +529,10 @@ section>.circ,section>.sweep,section>.chipdeco{position:absolute;z-index:0}
 .epgrid .ep{opacity:0}
 .epgrid.in .ep{opacity:1;animation:epin .6s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--i,0) * 60ms)}
 @keyframes epin{from{opacity:0;transform:translateY(26px) rotate(1.5deg)}to{opacity:1;transform:none}}
-.ep .th::after{content:"";position:absolute;left:0;right:0;top:-4px;height:3px;background:var(--mint);opacity:0;z-index:2}
-.ep:hover .th::after{opacity:1;animation:scnb 1.5s linear infinite}
+
+
 @media (prefers-reduced-motion:reduce){
-  .banner::before{display:none}.banner .ov>*{opacity:1;transform:none}.banner img,.showhead>img,.scan,.mq div,.ep:hover .th::after{animation:none}.epgrid .ep{opacity:1;animation:none!important}
+  .banner::before{display:none}.banner .ov>*{opacity:1;transform:none}.banner img,.showhead>img,.mq div{animation:none}.epgrid .ep{opacity:1;animation:none!important}
 }
 
 /* ================= light theme: cool grey base, ink panels, vibrant accents ================= */
@@ -1006,7 +1006,7 @@ function renderSeries(){
   app.innerHTML='<div class="pg"><div class="banners">'+SERIES.map(function(s,i){
     return '<a class="banner '+(s.textPos==="right"?"br":"")+'" href="#/series/'+esc(s.id)+'" style="--c:'+esc(s.color||PAL[i%4])+';--posm:'+esc(s.bannerPosM||s.bannerPos||"50% 50%")+';--zm:'+esc(s.bannerZoomM||1)+'">'+
       '<img src="'+esc(s.banner||s.poster)+'" alt="" style="object-position:'+esc(s.bannerPos||"50% 50%")+'" '+(i?'loading="lazy"':'')+'>'+
-      '<div class="bhud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="scan" aria-hidden="true"></div><div class="tc" aria-hidden="true"><b></b><span>REC 00:00:00</span></div>'+
+      '<div class="bhud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="tc" aria-hidden="true"><b></b><span>REC 00:00:00</span></div>'+
       '<span class="eps tag">'+s.episodes.length+' episodes</span>'+
       '<div class="ov"><span class="num">0'+(i+1)+' // SERIES</span><h2>'+esc(s.title)+'</h2><p>'+esc(s.oneLiner||s.tagline||"")+'</p><span class="go">Watch now <span aria-hidden="true">&#9654;</span></span></div>'+
       '<div class="mq" aria-hidden="true"><div>'+mqText(s)+mqText(s)+'</div></div></a>';
@@ -1028,7 +1028,7 @@ function mqText(s){var g=(s.genres||[]).join(" // ");return '<span>'+esc(s.title
 function renderShow(s){
   setActive("series");setTitle(s.title);
   var first=0;for(var i=0;i<s.episodes.length;i++){if(s.episodes[i].video){first=i;break}}
-  app.innerHTML='<div class="pg"><section class="showhead" style="--c:'+esc(s.color||PAL[0])+'"><img src="'+esc(s.banner||s.poster)+'" alt="" style="object-position:'+esc(s.bannerPos||"50% 50%")+'"><div class="bhud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="scan" aria-hidden="true"></div><div class="in">'+
+  app.innerHTML='<div class="pg"><section class="showhead" style="--c:'+esc(s.color||PAL[0])+'"><img src="'+esc(s.banner||s.poster)+'" alt="" style="object-position:'+esc(s.bannerPos||"50% 50%")+'"><div class="bhud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="in">'+
     '<a class="back" href="#/series">&#9664; All series</a><div class="genres">'+(s.genres||[]).map(function(g){return '<span>'+esc(g)+'</span>'}).join("")+'</div>'+
     '<h1>'+esc(s.title)+'</h1><p>'+esc(s.description||s.tagline||"")+'</p><p style="margin-top:20px"><a class="btn" data-watch href="#/watch/'+esc(s.id)+'/'+(first+1)+'">&#9654; Watch episode '+(first+1)+'</a></p></div></section>'+
     '<section class="epsec"><h2 class="h2">Episodes</h2><div class="epgrid">'+s.episodes.map(function(e,i){
