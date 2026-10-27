@@ -144,16 +144,16 @@ window.SERIES = [
     bannerPosM: "16% 50%",
     textPos: "right",
     episodes: [
-      { title: "Episode 1",  video: "https://vz-30b87a01-407.b-cdn.net/802bcebb-a309-4cce-a95f-73666973e59a/playlist.m3u8", thumb: "images/dandelion-ep01.webp", length: "" },
-      { title: "Episode 2",  video: "https://vz-30b87a01-407.b-cdn.net/c52b9dd1-4db0-4c05-a170-56b0412a932e/playlist.m3u8", thumb: "images/dandelion-ep02.webp", length: "" },
-      { title: "Episode 3",  video: "https://vz-30b87a01-407.b-cdn.net/a0021643-3c15-4aa9-869b-b548245a1a03/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/a0021643-3c15-4aa9-869b-b548245a1a03/thumbnail.jpg", length: "" },
-      { title: "Episode 4",  video: "https://vz-30b87a01-407.b-cdn.net/361b457a-5094-41f6-92dd-2f4b2e72db1d/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/361b457a-5094-41f6-92dd-2f4b2e72db1d/thumbnail.jpg", length: "" },
-      { title: "Episode 5",  video: "https://vz-30b87a01-407.b-cdn.net/95d4c7ae-fb0e-4c7f-b7ab-0b125eab8e7b/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/95d4c7ae-fb0e-4c7f-b7ab-0b125eab8e7b/thumbnail.jpg", length: "" },
-      { title: "Episode 6",  video: "https://vz-30b87a01-407.b-cdn.net/afc202fc-d662-4a42-b76f-7b356fd2c03d/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/afc202fc-d662-4a42-b76f-7b356fd2c03d/thumbnail.jpg", length: "" },
-      { title: "Episode 7",  video: "https://vz-30b87a01-407.b-cdn.net/5c77d094-73bb-43b6-bb01-e0e557122ca5/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/5c77d094-73bb-43b6-bb01-e0e557122ca5/thumbnail.jpg", length: "" },
-      { title: "Episode 8",  video: "https://vz-30b87a01-407.b-cdn.net/5658a9fd-b3a5-4a2d-8240-e44d6981730c/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/5658a9fd-b3a5-4a2d-8240-e44d6981730c/thumbnail.jpg", length: "" },
-      { title: "Episode 9",  video: "https://vz-30b87a01-407.b-cdn.net/7afc8bd4-4a7e-42e1-bb60-d2e161d0b3ad/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/7afc8bd4-4a7e-42e1-bb60-d2e161d0b3ad/thumbnail.jpg", length: "" },
-      { title: "Episode 10", video: "https://vz-30b87a01-407.b-cdn.net/e201ec84-bfca-4a81-8154-0bc3ee8825b2/playlist.m3u8", thumb: "images/dandelion-ep10.webp", length: "" }
+      { title: "Episode 1",  video: "https://vz-30b87a01-407.b-cdn.net/d61f4245-ca38-46d0-a13b-8beed95f95ee/playlist.m3u8", thumb: "images/dandelion-ep01.webp", length: "" },
+      { title: "Episode 2",  video: "https://vz-30b87a01-407.b-cdn.net/8781a94a-3994-4dd3-a8ea-fde9771c7fde/playlist.m3u8", thumb: "images/dandelion-ep02.webp", length: "" },
+      { title: "Episode 3",  video: "https://vz-30b87a01-407.b-cdn.net/08e5e0ba-214e-48e1-acb2-59250b1b0a56/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/08e5e0ba-214e-48e1-acb2-59250b1b0a56/thumbnail.jpg", length: "" },
+      { title: "Episode 4",  video: "https://vz-30b87a01-407.b-cdn.net/87f9e531-220d-4fc4-9ee1-c0c0134425f2/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/87f9e531-220d-4fc4-9ee1-c0c0134425f2/thumbnail.jpg", length: "" },
+      { title: "Episode 5",  video: "https://vz-30b87a01-407.b-cdn.net/9832827b-9121-4e14-989e-63ea51e9353f/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/9832827b-9121-4e14-989e-63ea51e9353f/thumbnail.jpg", length: "" },
+      { title: "Episode 6",  video: "https://vz-30b87a01-407.b-cdn.net/b2fdbe24-9baa-43a0-848b-b7988c2339db/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/b2fdbe24-9baa-43a0-848b-b7988c2339db/thumbnail.jpg", length: "" },
+      { title: "Episode 7",  video: "https://vz-30b87a01-407.b-cdn.net/0b68b3e6-35bf-435a-94b9-674272631520/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/0b68b3e6-35bf-435a-94b9-674272631520/thumbnail.jpg", length: "" },
+      { title: "Episode 8",  video: "https://vz-30b87a01-407.b-cdn.net/efc47f14-5769-447c-ba6b-4fe58447acae/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/efc47f14-5769-447c-ba6b-4fe58447acae/thumbnail.jpg", length: "" },
+      { title: "Episode 9",  video: "https://vz-30b87a01-407.b-cdn.net/467857dd-d60e-4629-ab2a-956dd6d341c0/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/467857dd-d60e-4629-ab2a-956dd6d341c0/thumbnail.jpg", length: "" },
+      { title: "Episode 10", video: "https://vz-30b87a01-407.b-cdn.net/19edbe4b-75ce-4391-bd73-08467e9437f8/playlist.m3u8", thumb: "images/dandelion-ep10.webp", length: "" }
     ]
   },
   {
