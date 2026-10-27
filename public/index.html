@@ -570,6 +570,14 @@ section>.circ,section>.sweep,section>.chipdeco{position:absolute;z-index:0}
   .sh-ovl h1,.sh-ovrt h1{font-size:clamp(2.2rem,4.6vw,3.8rem);white-space:nowrap;margin:0 0 10px}
   .sh-ovrt h1{white-space:normal;line-height:.9}
 }
+@media (min-width:701px){
+  /* text in the top right, over the sky */
+  .banner.tr{align-items:flex-start;justify-content:flex-end}
+  .banner.tr .eps{top:auto;bottom:56px}
+  .sh-tr{align-items:flex-start}
+  .sh-tr .in{margin:0 0 0 auto;padding:clamp(70px,9vw,110px) clamp(24px,4vw,60px) 0}
+  .sh-tr h1{font-size:clamp(2.2rem,4.6vw,3.8rem);white-space:nowrap;margin:0 0 10px}
+}
 @media (max-width:700px){
   .showhead{display:block;min-height:0;background:var(--ink)}
   .showhead::after{display:none}
@@ -1135,7 +1143,7 @@ function thumbHTML(s,e,i){
 function renderSeries(){
   setActive("series");setTitle("Series");
   app.innerHTML='<div class="pg"><div class="banners">'+SERIES.map(function(s,i){
-    return '<a class="banner '+(s.textPos==="right"?"br":"")+'" href="#/series/'+esc(s.id)+'" style="--c:'+esc(s.color||PAL[i%4])+';--posm:'+esc(s.bannerPosM||s.bannerPos||"50% 50%")+';--zm:'+esc(s.bannerZoomM||1)+'">'+
+    return '<a class="banner '+(s.textPos==="right"?"br":(s.textPos==="tr"?"tr":""))+'" href="#/series/'+esc(s.id)+'" style="--c:'+esc(s.color||PAL[i%4])+';--posm:'+esc(s.bannerPosM||s.bannerPos||"50% 50%")+';--zm:'+esc(s.bannerZoomM||1)+'">'+
       '<img src="'+esc(s.banner||s.poster)+'" alt="" style="object-position:'+esc(s.bannerPos||"50% 50%")+'" '+(i?'loading="lazy"':'')+'>'+
       '<div class="bhud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="tc" aria-hidden="true"><b></b><span>REC 00:00:00</span></div>'+
       '<span class="eps tag">'+s.episodes.length+' episodes</span>'+
