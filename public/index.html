@@ -1098,7 +1098,7 @@ function renderNFT(){
 function thumbHTML(s,e,i){
   var c=PAL[(i+ (s.id.length))%4];
   if(c===s.color)c=PAL[(i+1+s.id.length)%4];
-  return '<div class="th" style="--c:'+c+'">'+(e.thumb?'<img src="'+esc(tv(e.thumb))+'" alt="" loading="lazy">':'<div class="n">'+(i+1)+'</div>')+'</div>';
+  return '<div class="th" style="--c:'+c+'">'+(e.thumb?'<img src="'+esc(tv(e.thumb))+'" alt="" loading="lazy" onerror="this.outerHTML=\'<div class=n>'+(i+1)+'</div>\'">':'<div class="n">'+(i+1)+'</div>')+'</div>';
 }
 function renderSeries(){
   setActive("series");setTitle("Series");
@@ -1297,7 +1297,7 @@ function loadEp(n,dir){
 function showPh(e,n,ended){
   var s=cur.s,last=n>=s.episodes.length;
   var c=PAL[n%4];
-  var h='<div class="box"><div class="pimg" style="--c:'+c+'">'+(e.thumb?'<img src="'+esc(tv(e.thumb))+'" alt="">':n)+'</div>';
+  var h='<div class="box"><div class="pimg" style="--c:'+c+'">'+(e.thumb?'<img src="'+esc(tv(e.thumb))+'" alt="" onerror="this.outerHTML=\''+n+'\'">':n)+'</div>';
   if(ended){
     h+='<h3>That was the last episode</h3><p>'+esc(s.title)+' continues soon.</p><div class="row"><button class="btn" id="phreplay">Replay episode 1</button><a class="btn ghost" href="#/series/'+esc(s.id)+'">Back to episodes</a></div>';
   }else{
