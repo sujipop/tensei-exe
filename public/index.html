@@ -409,6 +409,33 @@ main{padding-top:var(--hh);min-height:100svh}
   #player{grid-template-rows:minmax(0,1fr);grid-template-columns:minmax(0,1fr)}
   #vid{width:auto;height:100%;max-width:100%;max-height:100%;aspect-ratio:9/16;object-fit:contain;justify-self:center;outline:3px solid var(--mint);outline-offset:-3px}
 }
+
+/* social rail + comments */
+.prail{position:absolute;right:max(14px,env(safe-area-inset-right));bottom:clamp(96px,16vh,150px);z-index:4;display:grid;gap:10px;transition:opacity .35s}
+#player.idle .prail{opacity:0;pointer-events:none}
+.pr{display:grid;justify-items:center;gap:4px;min-width:58px;padding:9px 8px 7px;background:rgba(20,8,31,.88);border:1px solid var(--mint);color:var(--white);font:600 .66rem/1 var(--display);letter-spacing:.12em;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
+.pr svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}
+.pr:hover{border-color:var(--pink)}
+.pr.on{color:var(--pink)}.pr.on svg{fill:var(--pink)}
+#pcm{position:absolute;z-index:6;right:0;bottom:0;width:min(460px,100%);max-height:72svh;display:flex;flex-direction:column;background:var(--ink);border:1px solid var(--mint);border-bottom:0;color:var(--white);font-family:"Share Tech Mono",ui-monospace,Menlo,monospace}
+#pcm[hidden]{display:none}
+#pcm .ch2{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid var(--mint);color:var(--mint);font-size:.78rem;letter-spacing:.2em;text-transform:uppercase}
+#pcm .ch2 button{background:none;border:0;color:var(--yellow);font:inherit;letter-spacing:.14em}
+#pcm .cl{overflow:auto;padding:6px 14px;flex:1;min-height:90px}
+#pcm .ci{padding:9px 0;border-bottom:1px dashed rgba(110,255,219,.25)}
+#pcm .ci b{color:var(--yellow);font-weight:400;letter-spacing:.08em}#pcm .ci i{font-style:normal;color:rgba(255,247,255,.45);font-size:.7rem;margin-left:8px}
+#pcm .ci p{margin-top:3px;font-size:.88rem;line-height:1.35;overflow-wrap:anywhere}
+#pcm .empty{padding:16px 0;color:rgba(255,247,255,.55);font-size:.85rem}
+#pcm form{display:grid;gap:8px;padding:12px 14px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--mint)}
+#pcm input,#pcm textarea{width:100%;background:#fff7ff0d;border:1px solid rgba(110,255,219,.5);color:var(--white);padding:9px 10px;font:inherit;font-size:16px;border-radius:0}
+#pcm textarea{resize:none;height:64px}
+#pcm .hp{position:absolute;left:-9999px;opacity:0}
+#pcm .sendrow{display:flex;gap:10px;align-items:center}
+#pcm .send{background:var(--yellow);color:var(--ink);border:0;padding:10px 16px;font:700 .8rem/1 var(--display);letter-spacing:.16em;text-transform:uppercase}
+#pcm .cerr{color:var(--pink);font-size:.78rem}
+#ptoast{position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:7;background:var(--yellow);color:var(--ink);padding:9px 14px;font:700 .8rem/1 var(--display);letter-spacing:.14em;text-transform:uppercase}
+#ptoast[hidden]{display:none}
+@media (max-width:700px){#pcm{width:100%}}
 .pnav:hover{background:var(--pink)} .pnav[disabled]{opacity:.25;pointer-events:none}
 #pprev{left:max(14px,env(safe-area-inset-left))} #pnext{right:max(14px,env(safe-area-inset-right))}
 #phint{position:absolute;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:5;background:var(--yellow);color:var(--ink);font:700 .85rem/1 var(--display);letter-spacing:.14em;text-transform:uppercase;padding:12px 16px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .4s}
@@ -619,6 +646,22 @@ body{background:var(--bg);color:var(--ink)}
   <button class="pnav" id="pprev" aria-label="Previous episode">&#9664;</button>
   <button class="pnav" id="pnext" aria-label="Next episode">&#9654;</button>
   <div id="phint">Swipe for next / previous</div>
+  <div class="prail" id="prail">
+    <button class="pr" id="plike" aria-label="Like"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg><span id="plc">0</span></button>
+    <button class="pr" id="pcmb" aria-label="Comments"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg><span id="pcc">0</span></button>
+    <button class="pr" id="pshare" aria-label="Share"><svg viewBox="0 0 24 24"><path d="M12 15V4m0 0L8 8m4-4 4 4M5 12v8h14v-8"/></svg><span>SHARE</span></button>
+  </div>
+  <div id="pcm" hidden role="dialog" aria-label="Comments">
+    <div class="ch2"><span id="pcmt">Comments</span><button id="pcmx" aria-label="Close comments">&#10005; Close</button></div>
+    <div class="cl" id="pcl"></div>
+    <form id="pcf" autocomplete="off">
+      <input id="pcn" maxlength="24" placeholder="Your name" aria-label="Your name">
+      <input class="hp" id="pch" tabindex="-1" aria-hidden="true">
+      <textarea id="pct" maxlength="400" placeholder="Write a comment" aria-label="Comment"></textarea>
+      <div class="sendrow"><button class="send" type="submit">Send</button><span class="cerr" id="pce"></span></div>
+    </form>
+  </div>
+  <div id="ptoast" hidden></div>
 </div>
 
 <script src="series.js"></script>
@@ -1147,8 +1190,65 @@ function vErr(tk,msg){
   PH.innerHTML='<div class="box"><h3>This video will not play</h3><p>'+esc(msg)+'</p><div class="row">'+(!last?'<button class="btn" id="phnext">Next episode</button>':'')+'<a class="btn ghost" href="#/series/'+esc(s.id)+'">Back to episodes</a></div></div>';
   var nb=$("#phnext");if(nb)nb.addEventListener("click",function(){stepEp(1)});
 }
+
+/* ---- likes, comments, share ---- */
+var dev=(function(){try{var d=localStorage.getItem("tdev");if(!d){d=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(36).slice(2,10)).toLowerCase();localStorage.setItem("tdev",d)}return d}catch(e){return "anon-"+Math.random().toString(36).slice(2,12)}})();
+var soc={k:"",liked:false,likes:0,busy:false,tk:0};
+function epKey(){return cur.s.id+"-"+cur.n}
+function ago(t){var m=Math.floor((Date.now()-t)/60000);if(m<1)return "just now";if(m<60)return m+"m ago";var h=Math.floor(m/60);if(h<24)return h+"h ago";return Math.floor(h/24)+"d ago"}
+function toast(m){var t=$("#ptoast");t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){t.hidden=true},1800)}
+function paintSoc(){$("#plc").textContent=soc.likes;$("#plike").classList.toggle("on",soc.liked)}
+function addComment(c,top){
+  var l=$("#pcl"),e=l.querySelector(".empty");if(e)e.remove();
+  var d=document.createElement("div");d.className="ci";
+  var b=document.createElement("b");b.textContent=c.name;var i=document.createElement("i");i.textContent=ago(c.t);
+  var p=document.createElement("p");p.textContent=c.body;d.appendChild(b);d.appendChild(i);d.appendChild(p);
+  if(top&&l.firstChild)l.insertBefore(d,l.firstChild);else l.appendChild(d);
+}
+function paintComments(list){
+  var l=$("#pcl");l.textContent="";
+  if(!list.length){var e=document.createElement("div");e.className="empty";e.textContent="No comments yet. Be the first.";l.appendChild(e)}
+  list.forEach(function(c){addComment(c,false)});
+  $("#pcc").textContent=list.length>=60?"60+":list.length;$("#pcmt").textContent="Comments // "+list.length;
+}
+function loadSoc(){
+  soc.k=epKey();var k=soc.k,tk=++soc.tk;
+  soc.liked=false;soc.likes=0;paintSoc();$("#pcc").textContent="0";$("#pcl").textContent="";$("#pcm").hidden=true;
+  fetch("/api/ep?k="+encodeURIComponent(k)+"&d="+encodeURIComponent(dev)).then(function(r){return r.ok?r.json():null}).then(function(j){
+    if(!j||tk!==soc.tk)return;soc.likes=j.likes;soc.liked=j.liked;paintSoc();paintComments(j.comments||[]);
+  }).catch(function(){});
+}
+$("#plike").onclick=function(){
+  if(soc.busy)return;soc.busy=true;var on=!soc.liked,k=soc.k;
+  soc.liked=on;soc.likes=Math.max(0,soc.likes+(on?1:-1));paintSoc();
+  fetch("/api/like",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({k:k,d:dev,on:on})}).then(function(r){return r.json()}).then(function(j){
+    if(k===soc.k&&j&&typeof j.likes==="number"){soc.likes=j.likes;soc.liked=j.liked;paintSoc()}
+  }).catch(function(){}).then(function(){soc.busy=false});
+};
+$("#pcmb").onclick=function(){var m=$("#pcm");m.hidden=!m.hidden;if(!m.hidden){try{$("#pcn").value=localStorage.getItem("tname")||""}catch(e){}}};
+$("#pcmx").onclick=function(){$("#pcm").hidden=true};
+$("#pcf").onsubmit=function(ev){
+  ev.preventDefault();var err=$("#pce");err.textContent="";
+  var n=$("#pcn").value.trim(),t=$("#pct").value.trim();
+  if(!n||t.length<2){err.textContent="Add a name and a comment.";return}
+  var k=soc.k,btn=$("#pcf .send");btn.disabled=true;
+  fetch("/api/comment",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({k:k,name:n,body:t,website:$("#pch").value})}).then(function(r){return r.json().then(function(j){return [r.ok,j]})}).then(function(x){
+    if(!x[0]){err.textContent=x[1].error||"Could not send.";return}
+    try{localStorage.setItem("tname",n)}catch(e){}
+    if(k===soc.k){addComment(x[1],true);var c=$("#pcl").querySelectorAll(".ci").length;$("#pcc").textContent=c;$("#pcmt").textContent="Comments // "+c}
+    $("#pct").value="";
+  }).catch(function(){err.textContent="Could not send. Try again."}).then(function(){btn.disabled=false});
+};
+$("#pshare").onclick=function(){
+  var u=location.origin+"/#/watch/"+cur.s.id+"/"+cur.n,t="TENSEI.EXE: "+cur.s.title;
+  if(navigator.share){navigator.share({title:t,url:u}).catch(function(){});return}
+  var done=function(){toast("Link copied")};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(done,function(){toast(u)});else toast(u);
+};
+$("#pcm").addEventListener("keydown",function(e){e.stopPropagation()});
+["touchstart","touchend"].forEach(function(ev){$("#pcm").addEventListener(ev,function(e){e.stopPropagation()},{passive:true});$("#prail").addEventListener(ev,function(e){e.stopPropagation()},{passive:true})});
 function loadEp(n,dir){
-  var s=cur.s,e=s.episodes[n-1];cur.n=n;var tk=++token;
+  var s=cur.s,e=s.episodes[n-1];cur.n=n;var tk=++token;loadSoc();
   $("#ptitle").textContent=s.title+" · "+epTitle(e,n-1);
   $("#pcount").textContent=n+" / "+s.episodes.length;
   $("#pprev").disabled=n<=1;$("#pnext").disabled=n>=s.episodes.length;

@@ -1,8 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tensei-exe",
+  "main": "src/worker.js",
   "compatibility_date": "2026-10-19",
   "assets": {
-    "directory": "./public"
-  }
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "tensei-exe-social", "database_id": "c0051be3-20c6-4be8-8dd3-34ab71a2cfcc" }
+  ]
 }
