@@ -150,8 +150,9 @@ window.SERIES = [
     color: "#ff6de0",
     poster: "images/dandelion-key.webp",
     banner: "images/dandelion-banner-2.webp",
+    bannerM: "images/dandelion-banner-m.webp",   // phone version: extra sky on top so the characters sit lower
     bannerPos: "50% 8%",
-    bannerPosM: "19% 50%",
+    bannerPosM: "17% 50%",
     textPos: "right",
     showLayout: "ovr",
     episodes: [

@@ -1140,11 +1140,12 @@ function thumbHTML(s,e,i){
   if(r&&e.video){mk=r.done?'<span class="wm">&#10003; Watched</span>':(r.t>=3&&r.d?'<i class="pbr" style="width:'+Math.min(100,Math.round(r.t/r.d*100))+'%"></i>':"")}
   return '<div class="th" style="--c:'+c+'">'+mk+(e.thumb?'<img src="'+esc(tv(e.thumb))+'" alt="" loading="lazy" onerror="this.outerHTML=\'<div class=n>'+(i+1)+'</div>\'">':'<div class="n">'+(i+1)+'</div>')+'</div>';
 }
+function bannerSrc(s){return(s.bannerM&&window.matchMedia&&matchMedia("(max-width:700px)").matches)?s.bannerM:(s.banner||s.poster)}
 function renderSeries(){
   setActive("series");setTitle("Series");
   app.innerHTML='<div class="pg"><div class="banners">'+SERIES.map(function(s,i){
     return '<a class="banner '+(s.textPos==="right"?"br":(s.textPos==="tr"?"tr":""))+'" href="#/series/'+esc(s.id)+'" style="--c:'+esc(s.color||PAL[i%4])+';--posm:'+esc(s.bannerPosM||s.bannerPos||"50% 50%")+';--zm:'+esc(s.bannerZoomM||1)+'">'+
-      '<img src="'+esc(s.banner||s.poster)+'" alt="" style="object-position:'+esc(s.bannerPos||"50% 50%")+'" '+(i?'loading="lazy"':'')+'>'+
+      '<img src="'+esc(bannerSrc(s))+'" alt="" style="object-position:'+esc(s.bannerPos||"50% 50%")+'" '+(i?'loading="lazy"':'')+'>'+
       '<div class="bhud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="tc" aria-hidden="true"><b></b><span>REC 00:00:00</span></div>'+
       '<span class="eps tag">'+s.episodes.length+' episodes</span>'+
       '<div class="ov"><span class="num">0'+(i+1)+' // SERIES</span><h2>'+esc(s.title)+'</h2><span class="go">Watch now <span aria-hidden="true">&#9654;</span></span></div>'+
@@ -1168,7 +1169,7 @@ function renderShow(s){
   setActive("series");setTitle(s.title);
   var first=0;for(var i=0;i<s.episodes.length;i++){if(s.episodes[i].video){first=i;break}}
   var ct=contFor(s);
-  app.innerHTML='<div class="pg"><section class="showhead sh-'+esc(s.showLayout||"ovr")+'" style="--c:'+esc(s.color||PAL[0])+';--posm:'+esc(s.bannerPosM||s.bannerPos||"50% 50%")+';--n:\'0'+(SERIES.indexOf(s)+1)+'\'"><img src="'+esc(s.banner||s.poster)+'" alt="" style="object-position:'+esc(s.bannerPos||"50% 50%")+'"><div class="bhud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="in">'+
+  app.innerHTML='<div class="pg"><section class="showhead sh-'+esc(s.showLayout||"ovr")+'" style="--c:'+esc(s.color||PAL[0])+';--posm:'+esc(s.bannerPosM||s.bannerPos||"50% 50%")+';--n:\'0'+(SERIES.indexOf(s)+1)+'\'"><img src="'+esc(bannerSrc(s))+'" alt="" style="object-position:'+esc(s.bannerPos||"50% 50%")+'"><div class="bhud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="in">'+
     '<a class="back" href="#/series">&#9664; All series</a><div class="genres">'+(s.genres||[]).map(function(g){return '<span>'+esc(g)+'</span>'}).join("")+'</div>'+
     '<h1>'+esc(s.title)+'</h1><p class="sd">'+esc(s.description||s.tagline||"")+'</p><p style="margin-top:20px">'+(ct?'<a class="btn" data-watch href="#/watch/'+esc(s.id)+'/'+ct.n+'">&#9654; Continue episode '+ct.n+(ct.t?' &middot; '+fmtT(ct.t):'')+'</a> <a class="btn ghost" data-watch href="#/watch/'+esc(s.id)+'/'+(first+1)+'">From the start</a>':'<a class="btn" data-watch href="#/watch/'+esc(s.id)+'/'+(first+1)+'">&#9654; Watch episode '+(first+1)+'</a>')+'</p></div></section>'+
     '<section class="epsec"><h2 class="h2">Episodes</h2><div class="epgrid">'+s.episodes.map(function(e,i){
