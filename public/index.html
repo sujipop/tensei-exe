@@ -1126,10 +1126,8 @@ function renderNFT(){
     var v=w.querySelector("video");
     function on(){if(!v.getAttribute("src"))v.src=v.getAttribute("data-src");var p=v.play();if(p&&p.then)p.then(function(){w.classList.add("live")},function(){});else w.classList.add("live")}
     function off(){w.classList.remove("live");setTimeout(function(){if(!w.classList.contains("live")){v.pause();try{v.currentTime=0}catch(_){}}},250)}
-    var touch=matchMedia("(hover:none)").matches;
-    if(!touch){w.addEventListener("pointerenter",on);w.addEventListener("pointerleave",off)}
-    else{
-      /* phones/tablets have no hover: the card in the middle of the carousel animates by itself */
+    {
+      /* the card in the middle of the carousel animates by itself (phones, tablets and desktop) */
       var seen=true;w._front=false;
       w._vid=function(front){w._front=front;if(front&&seen)on();else if(!front)off()};
       if("IntersectionObserver"in window){new IntersectionObserver(function(es){es.forEach(function(e){seen=e.isIntersecting;if(!seen)off();else if(w._front)on()})},{threshold:.4}).observe(w)}
