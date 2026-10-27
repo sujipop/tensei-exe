@@ -309,6 +309,7 @@ main{padding-top:var(--hh);min-height:100svh}
 .banner:hover .go{background:var(--yellow)}
 .banner .eps{position:absolute;right:16px;top:14px;z-index:2}
 .banner + .banner{border-top:5px solid var(--ink)}
+@media (min-width:701px){.banner{aspect-ratio:auto;height:calc(100svh - var(--hh));max-height:none;min-height:480px;scroll-snap-align:start}html:has(.banners){scroll-snap-type:y proximity;scroll-padding-top:var(--hh)}}
 
 .showhead{position:relative;min-height:min(70svh,560px);display:flex;align-items:flex-end;background:var(--c);isolation:isolate;overflow:hidden;border-bottom:5px solid var(--ink)}
 .showhead>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
@@ -581,7 +582,7 @@ section>.circ,section>.sweep,section>.chipdeco{position:absolute;z-index:0}
 
 
 /* ---- series: animated banner UI ---- */
-.banner{padding-bottom:calc(clamp(18px,3.4vw,52px) + 34px)}
+.banner{padding-bottom:calc(clamp(18px,3.4vw,52px) + 42px)}
 .banner img{animation:kb 28s ease-in-out infinite alternate;transform-origin:60% 50%}
 .banner:hover img{transform:none;animation-duration:14s}
 @keyframes kb{from{transform:scale(1.02) translate3d(0,0,0)}to{transform:scale(1.11) translate3d(-1.6%,-1%,0)}}
@@ -600,8 +601,8 @@ section>.circ,section>.sweep,section>.chipdeco{position:absolute;z-index:0}
 @keyframes scnb{from{top:-1%}to{top:101%}}
 .tc{position:absolute;left:clamp(26px,4vw,52px);top:clamp(24px,3.4vw,44px);z-index:4;background:var(--ink);color:var(--mint);font:600 .72rem/1 var(--display);letter-spacing:.2em;padding:8px 10px;display:flex;gap:9px;align-items:center}
 .tc b{width:8px;height:8px;background:var(--pink);animation:blink 1s steps(2) infinite}
-.mq{position:absolute;left:0;right:0;bottom:0;height:32px;background:var(--ink);color:var(--c);overflow:hidden;display:flex;align-items:center;z-index:4}
-.mq div{display:flex;white-space:nowrap;animation:mqm 32s linear infinite;font:700 .72rem/1 var(--display);letter-spacing:.3em;text-transform:uppercase}
+.mq{position:absolute;left:0;right:0;bottom:0;height:40px;background:var(--ink);color:var(--c);overflow:hidden;display:flex;align-items:center;z-index:4}
+.mq div{display:flex;white-space:nowrap;animation:mqm 38s linear infinite;font:700 .86rem/1 var(--display);letter-spacing:.22em;text-transform:uppercase}
 .mq span{padding-right:1.4em}
 @keyframes mqm{to{transform:translateX(-50%)}}
 .showhead>img{animation:kb 30s ease-in-out infinite alternate}
@@ -1138,8 +1139,8 @@ function renderSeries(){
       '<img src="'+esc(s.banner||s.poster)+'" alt="" style="object-position:'+esc(s.bannerPos||"50% 50%")+'" '+(i?'loading="lazy"':'')+'>'+
       '<div class="bhud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="tc" aria-hidden="true"><b></b><span>REC 00:00:00</span></div>'+
       '<span class="eps tag">'+s.episodes.length+' episodes</span>'+
-      '<div class="ov"><span class="num">0'+(i+1)+' // SERIES</span><h2>'+esc(s.title)+'</h2><p>'+esc(s.oneLiner||s.tagline||"")+'</p><span class="go">Watch now <span aria-hidden="true">&#9654;</span></span></div>'+
-      '<div class="mq" aria-hidden="true"><div>'+mqText(s)+mqText(s)+'</div></div></a>';
+      '<div class="ov"><span class="num">0'+(i+1)+' // SERIES</span><h2>'+esc(s.title)+'</h2><span class="go">Watch now <span aria-hidden="true">&#9654;</span></span></div>'+
+      '<div class="mq" aria-hidden="true"><div>'+mqText(s)+mqText(s)+mqText(s)+mqText(s)+'</div></div></a>';
   }).join("")+'</div>'+footHTML()+'</div>';
   var bs=$$(".banner");
   if("IntersectionObserver"in window){
@@ -1154,7 +1155,7 @@ function renderSeries(){
   var iv=setInterval(function(){var t=Math.floor((Date.now()-t0)/1000),m=pad(Math.floor(t/60)%60,2),sec=pad(t%60,2);tcs.forEach(function(x){x.textContent="REC 00:"+m+":"+sec})},1000);
   cleanups.push(function(){clearInterval(iv)});
 }
-function mqText(s){var g=(s.genres||[]).join(" // ");return '<span>'+esc(s.title)+' // '+esc(g)+' // '+s.episodes.length+' episodes // tensei.exe //</span>'}
+function mqText(s){return '<span>'+esc(s.oneLiner||s.tagline||s.title)+' //</span>'}
 function renderShow(s){
   setActive("series");setTitle(s.title);
   var first=0;for(var i=0;i<s.episodes.length;i++){if(s.episodes[i].video){first=i;break}}
