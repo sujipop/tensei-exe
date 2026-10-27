@@ -36,6 +36,8 @@ window.SITE = {
   footer: "Tensei.exe is an original universe by SujiPop.",
   // While true, episodes without a video link show a "pretend this episode ended" test button.
   // Set to false when you go live.
+  // Changed a thumbnail in Bunny? Add 1 to this number and visitors get the new picture straight away.
+  thumbVersion: 1,
   testMode: true
 };
 

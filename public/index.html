@@ -1098,7 +1098,7 @@ function renderNFT(){
 function thumbHTML(s,e,i){
   var c=PAL[(i+ (s.id.length))%4];
   if(c===s.color)c=PAL[(i+1+s.id.length)%4];
-  return '<div class="th" style="--c:'+c+'">'+(e.thumb?'<img src="'+esc(e.thumb)+'" alt="" loading="lazy">':'<div class="n">'+(i+1)+'</div>')+'</div>';
+  return '<div class="th" style="--c:'+c+'">'+(e.thumb?'<img src="'+esc(tv(e.thumb))+'" alt="" loading="lazy">':'<div class="n">'+(i+1)+'</div>')+'</div>';
 }
 function renderSeries(){
   setActive("series");setTitle("Series");
@@ -1142,6 +1142,7 @@ function renderShow(s){
 
 /* ---------- PLAYER ---------- */
 var P=$("#player"),V=$("#vid"),PH=$("#pph"),playerOpen=false,cur={s:null,n:1},hls=null,token=0,hintT=0;
+function tv(u){var v=SITE.thumbVersion;return(v&&/^https?:/.test(u))?u+(u.indexOf('?')<0?'?':'&')+'v='+v:u}
 function lockBody(on){document.body.classList.toggle("lock",on)}
 function enterFs(){
   var f=P.requestFullscreen||P.webkitRequestFullscreen;
@@ -1296,7 +1297,7 @@ function loadEp(n,dir){
 function showPh(e,n,ended){
   var s=cur.s,last=n>=s.episodes.length;
   var c=PAL[n%4];
-  var h='<div class="box"><div class="pimg" style="--c:'+c+'">'+(e.thumb?'<img src="'+esc(e.thumb)+'" alt="">':n)+'</div>';
+  var h='<div class="box"><div class="pimg" style="--c:'+c+'">'+(e.thumb?'<img src="'+esc(tv(e.thumb))+'" alt="">':n)+'</div>';
   if(ended){
     h+='<h3>That was the last episode</h3><p>'+esc(s.title)+' continues soon.</p><div class="row"><button class="btn" id="phreplay">Replay episode 1</button><a class="btn ghost" href="#/series/'+esc(s.id)+'">Back to episodes</a></div>';
   }else{
