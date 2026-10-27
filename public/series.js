@@ -149,9 +149,9 @@ window.SERIES = [
     oneLiner: "Abducted by SujiCorp, Lyra and Ren fight to survive.",
     color: "#ff6de0",
     poster: "images/dandelion-key.webp",
-    banner: "images/dandelion-banner.webp",
-    bannerPos: "50% 50%",
-    bannerPosM: "16% 50%",
+    banner: "images/dandelion-banner-2.webp",
+    bannerPos: "50% 8%",
+    bannerPosM: "19% 50%",
     textPos: "right",
     showLayout: "ovr",
     episodes: [
