@@ -33,6 +33,14 @@ window.SITE = {
   sujicorpPoster: "images/sujicorp.webp",
   name: "TENSEI.EXE",
   mint: "https://www.launchmynft.io/mint/tensei_exe",
+  // Social links. Each row: icon name, address, label (label is only for screen readers and the hover tip)
+  socials: [
+    ["instagram", "https://www.instagram.com/tensei_exe/", "Instagram"],
+    ["x", "https://x.com/tenseiexe", "X"],
+    ["youtube", "https://www.youtube.com/@Tensei_exe", "YouTube"],
+    ["tiktok", "https://www.tiktok.com/@tenseiexe", "TikTok"],
+    ["discord", "https://discord.gg/5xhynYsmzq", "Discord"]
+  ],
   footer: "Tensei.exe is an original universe by SujiPop.",
   // While true, episodes without a video link show a "pretend this episode ended" test button.
   // Set to false when you go live.
