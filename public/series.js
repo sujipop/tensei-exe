@@ -148,9 +148,9 @@ window.SERIES = [
     showLayout: "ovr",
     episodes: [
       { title: "Episode 1",  video: "https://vz-30b87a01-407.b-cdn.net/d61f4245-ca38-46d0-a13b-8beed95f95ee/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/d61f4245-ca38-46d0-a13b-8beed95f95ee/thumbnail_59c21031.jpg", length: "" },
-      { title: "Episode 2",  video: "https://vz-30b87a01-407.b-cdn.net/8781a94a-3994-4dd3-a8ea-fde9771c7fde/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/8781a94a-3994-4dd3-a8ea-fde9771c7fde/thumbnail.jpg", length: "" },
-      { title: "Episode 3",  video: "https://vz-30b87a01-407.b-cdn.net/08e5e0ba-214e-48e1-acb2-59250b1b0a56/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/08e5e0ba-214e-48e1-acb2-59250b1b0a56/thumbnail.jpg", length: "" },
-      { title: "Episode 4",  video: "https://vz-30b87a01-407.b-cdn.net/87f9e531-220d-4fc4-9ee1-c0c0134425f2/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/87f9e531-220d-4fc4-9ee1-c0c0134425f2/thumbnail.jpg", length: "" },
+      { title: "Episode 2",  video: "https://vz-30b87a01-407.b-cdn.net/8781a94a-3994-4dd3-a8ea-fde9771c7fde/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/8781a94a-3994-4dd3-a8ea-fde9771c7fde/thumbnail_3511b616.jpg", length: "" },
+      { title: "Episode 3",  video: "https://vz-30b87a01-407.b-cdn.net/08e5e0ba-214e-48e1-acb2-59250b1b0a56/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/08e5e0ba-214e-48e1-acb2-59250b1b0a56/thumbnail_7ff9d5b0.jpg", length: "" },
+      { title: "Episode 4",  video: "https://vz-30b87a01-407.b-cdn.net/87f9e531-220d-4fc4-9ee1-c0c0134425f2/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/87f9e531-220d-4fc4-9ee1-c0c0134425f2/thumbnail_c7dfad19.jpg", length: "" },
       { title: "Episode 5",  video: "https://vz-30b87a01-407.b-cdn.net/9832827b-9121-4e14-989e-63ea51e9353f/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/9832827b-9121-4e14-989e-63ea51e9353f/thumbnail.jpg", length: "" },
       { title: "Episode 6",  video: "https://vz-30b87a01-407.b-cdn.net/b2fdbe24-9baa-43a0-848b-b7988c2339db/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/b2fdbe24-9baa-43a0-848b-b7988c2339db/thumbnail.jpg", length: "" },
       { title: "Episode 7",  video: "https://vz-30b87a01-407.b-cdn.net/0b68b3e6-35bf-435a-94b9-674272631520/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/0b68b3e6-35bf-435a-94b9-674272631520/thumbnail.jpg", length: "" },
