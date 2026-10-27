@@ -861,8 +861,8 @@ function dotsHTML(){var o="";for(var i=0;i<100;i++)o+="<i></i>";return '<div cla
 
 var SCENES=[
  {id:"hero",cls:"hero s-ink",h:"170vh",label:"Start"},
- {id:"beam",cls:"s-ink vscene",h:"calc(100svh - var(--hh))",label:"The Beam",tag:"01 // The Beam",video:"beam",lines:["A <em>Beam</em> from outer space","destroyed all humanity."]},
- {id:"sujicorp",cls:"s-ink vscene",h:"calc(100svh - var(--hh))",label:"SujiCorp",tag:"02 // SujiCorp",video:"sujicorp",lines:["SujiCorp retrieved undamaged brains.","Gave humanity a new life.","Through the <em>TENSEI.EXE</em> Protocol."]},
+ {id:"beam",cls:"s-ink vscene",h:"calc(100svh - var(--hh))",label:"The Beam",tag:"01 // The Beam",video:"beam",lines:["A <em>Beam</em> fell from the silent stars,","and the world went quiet."]},
+ {id:"sujicorp",cls:"s-ink vscene",h:"calc(100svh - var(--hh))",label:"SujiCorp",tag:"02 // SujiCorp",video:"sujicorp",lines:["In the ashes, SujiCorp found minds still dreaming.","It woke them into a second life,","through the <em>TENSEI.EXE</em> Protocol."]},
  {id:"fin",cls:"fin s-ink",h:"230vh",label:"Rebirth",fin:true}
 ];
 
@@ -877,7 +877,7 @@ function renderLore(){
         '<div class="cue">SCROLL</div><div class="strip" aria-hidden="true"><div>'+new Array(14).join("REBORN IN A BROKEN WORLD &nbsp;//&nbsp; 転生 &nbsp;//&nbsp; ")+'</div></div></div></section>';
     } else if(s.fin){
       html+='<section class="scene fin s-ink" data-i="'+i+'" style="--h:'+s.h+'"><div class="stick"><div class="ring"></div><div class="big jp" aria-hidden="true">転生</div>'+
-        '<p class="rb">Rebirth. <em>Survival.</em> Identity. What does it mean to be human when your body is not yours?</p>'+
+        '<p class="rb">Dive into the massive world of <em>Tensei.exe</em>.</p>'+
         '<div class="ctas"><a class="btn pink" href="'+esc(SITE.mint)+'" target="_blank" rel="noopener">Mint a Tensei</a><a class="btn" href="#/series">Watch the series</a><a class="btn ghost" href="#/creator">Meet SujiPop</a></div>'+socHTML()+'</div></section>';
     } else {
       var sv=s.video?SITE[s.video+"Video"]:"";
