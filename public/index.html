@@ -682,7 +682,7 @@ body{background:var(--bg);color:var(--ink)}
 .chips{display:flex;gap:10px;flex-wrap:wrap}
 .chip{display:inline-flex;align-items:baseline;gap:.6em;background:var(--ink);color:var(--white);padding:11px 16px;font:600 .8rem/1 var(--display);letter-spacing:.2em;text-transform:uppercase;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
 .chip b{font:700 clamp(1.2rem,2.4vw,1.7rem)/1 var(--display);letter-spacing:.04em;color:var(--mint)}
-.chip:nth-child(2) b{color:var(--yellow)}.chip:nth-child(3) b{color:var(--pink)}
+.chip:nth-child(2) b,.chip:nth-child(5) b{color:var(--yellow)}.chip:nth-child(3) b{color:var(--pink)}
 .nh-act{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .nfthero2 .mintbig{font-size:clamp(1rem,1.7vw,1.35rem);padding:15px 22px}
 .nh-band{position:absolute;left:-100vw;right:-100vw;top:50%;height:62%;transform:translateY(-50%);background:var(--yellow);border-top:5px solid var(--ink);border-bottom:5px solid var(--ink);pointer-events:none}
@@ -1113,7 +1113,7 @@ function heroDeck(items){
   var n=items.length,cards="",k;
   for(k=0;k<3;k++)items.forEach(function(c,i){cards+=cardHTML(c,i,k!==1)});
   return '<section class="nfthero2 grid-bg">'+circuit(1200,760,14,5,"var(--purple)",.4,"var(--mint)")+'<h1 class="sr">Tensei.exe NFT collection</h1>'+
-    '<div class="nh-top"><div class="chips"><span class="chip"><b>2,222</b>Supply</span><span class="chip"><b>250</b>Traits</span><span class="chip"><b>Solana</b>Chain</span></div>'+
+    '<div class="nh-top"><div class="chips"><span class="chip"><b>2,222</b>Supply</span><span class="chip"><b>250</b>Traits</span><span class="chip"><b>Solana</b>Chain</span><span class="chip"><b>Art IP</b></span><span class="chip"><b>World Building</b></span></div>'+
     '<div class="nh-act">'+mintBtn()+'<div class="arrows"><button type="button" data-d="-1" data-t="deck1" aria-label="Previous">&#9664;</button><button type="button" data-d="1" data-t="deck1" aria-label="Next">&#9654;</button></div></div></div>'+
     '<div class="hudf nohc"><div class="nh-band" aria-hidden="true"></div>'+hudCorners()+'<div class="deck curve stack" id="deck1" data-n="'+n+'" tabindex="0" aria-label="Tensei characters (scrollable, loops)">'+cards+'</div></div></section>';
 }
