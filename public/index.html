@@ -572,6 +572,20 @@ section>.circ,section>.sweep,section>.chipdeco{position:absolute;z-index:0}
 
 .term{color:var(--ink)}.term b{color:var(--purple)}
 .showhead{color:var(--white)}
+
+/* share button + more series */
+.shr{position:absolute;right:clamp(18px,4vw,56px);top:clamp(18px,3vw,40px);z-index:3;display:inline-flex;align-items:center;gap:9px;font:600 .8rem/1 var(--display);letter-spacing:.22em;text-transform:uppercase;background:var(--ink);color:var(--yellow);border:0;padding:10px 14px;cursor:pointer;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)}
+.shr svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:square}
+.shr:hover{background:var(--yellow);color:var(--ink)}
+.more{background:var(--bg,#e6e7ec);color:var(--ink);padding:clamp(30px,6vw,70px) clamp(18px,5vw,60px) clamp(40px,7vw,80px)}
+.more .h2{margin-bottom:22px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:22px}
+.mcard{position:relative;display:block;aspect-ratio:16/9;overflow:hidden;background:var(--c);border:4px solid var(--ink);box-shadow:8px 8px 0 var(--c);text-decoration:none;color:var(--white);isolation:isolate}
+.mcard img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.mcard:hover img{transform:scale(1.04)}
+.mcard .ml{position:absolute;left:0;bottom:0;z-index:2;background:var(--ink);padding:12px 16px;display:flex;flex-direction:column;gap:6px}
+.mcard .ml small{font:600 .7rem/1 var(--display);letter-spacing:.22em;color:var(--c)}
+.mcard .ml b{font:700 clamp(1.2rem,3vw,1.8rem)/1 var(--display);text-transform:uppercase}
 /* series page header: smaller text; on phones the picture sits on top and the text below it */
 .showhead h1{font-size:clamp(2.2rem,6vw,4.6rem);margin:8px 0 10px}
 .showhead p{font-size:.95rem;max-width:40ch;line-height:1.4}
@@ -1193,16 +1207,29 @@ function renderSeries(){
   cleanups.push(function(){clearInterval(iv)});
 }
 function mqText(s){return '<span>'+esc(s.oneLiner||s.tagline||s.title)+' //</span>'}
+function moreHTML(s){
+  var o=SERIES.filter(function(x){return x!==s});
+  if(!o.length)return "";
+  return '<section class="more"><h2 class="h2">More series</h2><div class="mgrid">'+o.map(function(x){
+    return '<a class="mcard" href="#/series/'+esc(x.id)+'" style="--c:'+esc(x.color||PAL[0])+'"><img src="'+esc(bannerSrc(x))+'" alt="" loading="lazy" style="object-position:'+esc(x.bannerPos||"50% 50%")+'"><div class="ml"><small>'+pad(SERIES.indexOf(x)+1,2)+' // SERIES</small><b>'+esc(x.title)+'</b></div></a>'}).join("")+'</div></section>';
+}
 function renderShow(s){
   setActive("series");setTitle(s.title);
   var first=0;for(var i=0;i<s.episodes.length;i++){if(s.episodes[i].video){first=i;break}}
   var ct=contFor(s);
   app.innerHTML='<div class="pg"><section class="showhead sh-'+esc(s.showLayout||"ovr")+'" style="--c:'+esc(s.color||PAL[0])+';--posm:'+esc(s.bannerPosM||s.bannerPos||"50% 50%")+';--n:\'0'+(SERIES.indexOf(s)+1)+'\'"><img src="'+esc(bannerSrc(s))+'" alt="" style="object-position:'+esc(s.bannerPos||"50% 50%")+'"><div class="bhud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="in">'+
-    '<a class="back" href="#/series">&#9664; All series</a><div class="genres">'+(s.genres||[]).map(function(g){return '<span>'+esc(g)+'</span>'}).join("")+'</div>'+
+    '<a class="back" href="#/series">&#9664; All series</a><button class="shr" id="shr" type="button" aria-label="Share"><svg viewBox="0 0 24 24"><path d="M12 15V4m0 0L8 8m4-4 4 4M5 12v8h14v-8"/></svg><span>Share</span></button><div class="genres">'+(s.genres||[]).map(function(g){return '<span>'+esc(g)+'</span>'}).join("")+'</div>'+
     '<h1>'+esc(s.title)+'</h1><p class="sd">'+esc(s.description||s.tagline||"")+'</p><p style="margin-top:20px">'+(ct?'<a class="btn" data-watch href="#/watch/'+esc(s.id)+'/'+ct.n+'">&#9654; Continue episode '+ct.n+(ct.t?' &middot; '+fmtT(ct.t):'')+'</a> <a class="btn ghost" data-watch href="#/watch/'+esc(s.id)+'/'+(first+1)+'">From the start</a>':'<a class="btn" data-watch href="#/watch/'+esc(s.id)+'/'+(first+1)+'">&#9654; Watch episode '+(first+1)+'</a>')+'</p></div></section>'+
     '<section class="epsec"><h2 class="h2">Episodes</h2><div class="epgrid">'+s.episodes.map(function(e,i){
       return '<a class="ep" style="--i:'+i+'" data-watch href="#/watch/'+esc(s.id)+'/'+(i+1)+'" aria-label="Play '+esc(epTitle(e,i))+'">'+thumbHTML(s,e,i)+(e.video?'<span class="play"></span>':'<span class="soon">Soon</span>')+
-        '<div class="lab"><span>EP '+pad(i+1,2)+'</span><span>'+esc(e.length||"")+'</span></div></a>'}).join("")+'</div></section>'+footHTML()+'</div>';
+        '<div class="lab"><span>EP '+pad(i+1,2)+'</span><span>'+esc(e.length||"")+'</span></div></a>'}).join("")+'</div></section>'+moreHTML(s)+footHTML()+'</div>';
+  var sb=$("#shr");
+  if(sb)sb.onclick=function(){
+    var u=location.origin+"/#/series/"+s.id,t="TENSEI.EXE: "+s.title,lb=sb.querySelector("span");
+    var done=function(){lb.textContent="Link copied";setTimeout(function(){lb.textContent="Share"},1800)};
+    if(navigator.share){navigator.share({title:t,url:u}).catch(function(){});return}
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(done,function(){lb.textContent="Copy failed"});else lb.textContent="Copy failed";
+  };
   var eg=$(".epgrid");
   if(eg){
     if("IntersectionObserver"in window){var io2=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){eg.classList.add("in");io2.disconnect()}})},{threshold:.08});io2.observe(eg);cleanups.push(function(){io2.disconnect()})}
