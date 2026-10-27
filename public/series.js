@@ -82,24 +82,24 @@ window.NFT_TENSEI = [
 
 window.NFT_ONE_OF_ONE = [
   { name: "Tensei 1/1 01", image: "images/oneofone-01.webp", video: "images/oneofone-01.mp4" },
-  { name: "Tensei 1/1 02", image: "images/oneofone-02.webp" },
+  { name: "Tensei 1/1 10", image: "images/oneofone-10.webp", video: "images/oneofone-10.mp4" },
+  { name: "Tensei 1/1 08", image: "images/oneofone-08.webp" },
+  { name: "Tensei 1/1 14", image: "images/oneofone-14.webp" },
   { name: "Tensei 1/1 03", image: "images/oneofone-03.webp", video: "images/oneofone-03.mp4" },
   { name: "Tensei 1/1 04", image: "images/oneofone-04.webp", video: "images/oneofone-04.mp4" },
   { name: "Tensei 1/1 05", image: "images/oneofone-05.webp" },
   { name: "Tensei 1/1 06", image: "images/oneofone-06.webp" },
   { name: "Tensei 1/1 07", image: "images/oneofone-07.webp", video: "images/oneofone-07.mp4" },
-  { name: "Tensei 1/1 08", image: "images/oneofone-08.webp" },
   { name: "Tensei 1/1 09", image: "images/oneofone-09.webp", video: "images/oneofone-09.mp4" },
-  { name: "Tensei 1/1 10", image: "images/oneofone-10.webp", video: "images/oneofone-10.mp4" },
+  { name: "Tensei 1/1 02", image: "images/oneofone-02.webp" },
   { name: "Tensei 1/1 11", image: "images/oneofone-11.webp" },
   { name: "Tensei 1/1 12", image: "images/oneofone-12.webp" },
-  { name: "Tensei 1/1 13", image: "images/oneofone-13.webp", video: "images/oneofone-13.mp4" },
-  { name: "Tensei 1/1 14", image: "images/oneofone-14.webp" },
   { name: "Tensei 1/1 15", image: "images/oneofone-15.webp" },
   { name: "Tensei 1/1 16", image: "images/oneofone-16.webp" },
   { name: "Tensei 1/1 17", image: "images/oneofone-17.webp", video: "images/oneofone-17.mp4" },
   { name: "Tensei 1/1 18", image: "images/oneofone-18.webp" },
-  { name: "Tensei 1/1 19", image: "images/oneofone-19.webp" }
+  { name: "Tensei 1/1 19", image: "images/oneofone-19.webp" },
+  { name: "Tensei 1/1 13", image: "images/oneofone-13.webp", video: "images/oneofone-13.mp4" }
 ];
 
 /* ---- Creator gallery ----
