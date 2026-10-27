@@ -361,6 +361,20 @@ main{padding-top:var(--hh);min-height:100svh}
 .vision{background:var(--yellow);color:var(--ink);padding:clamp(30px,6vw,64px) clamp(18px,6vw,80px)}
 .vision p{font:700 clamp(1.4rem,3.8vw,2.8rem)/1.1 var(--display);text-transform:uppercase;max-width:26ch}
 .vision p em{font-style:normal;background:var(--ink);color:var(--yellow);padding:0 .15em}
+.mile{background:var(--mint);color:var(--ink);padding:clamp(40px,7vw,80px) clamp(14px,4vw,60px);position:relative;overflow:hidden}
+.mile .seg-h{padding-left:0;padding-right:0}.mile .hbar .blink{color:var(--ink)}
+.mg{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(10px,1.6vw,20px)}
+.mc{background:var(--ink);color:var(--white);display:grid;grid-template-rows:auto 1fr;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
+.mc .mi{aspect-ratio:1;overflow:hidden;background:#000}
+.mc img{width:100%;height:100%;object-fit:cover;object-position:50% 50%;display:block}
+.mc .mt{padding:16px 18px 20px;display:grid;gap:8px;align-content:start}
+.mc small{font:700 .66rem/1 var(--display);letter-spacing:.22em;color:var(--mint)}
+.mc h3{font:700 1.05rem/1.15 var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--yellow)}
+.mc p{font-size:.95rem;line-height:1.4}
+.mc a{color:var(--pink);font-weight:700}
+.mlink{position:relative;margin-top:26px;display:flex;justify-content:center}
+@media (max-width:1000px){.mg{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.mg{grid-template-columns:1fr}}
 .gal{background:var(--purple);color:var(--ink);padding:clamp(40px,7vw,80px) clamp(14px,4vw,60px) clamp(60px,9vw,120px);position:relative;overflow:hidden}
 .gal-h{margin-bottom:10px;padding:0 6px}
 .gal-h p{font:600 .85rem/1.3 var(--display);letter-spacing:.2em;text-transform:uppercase;margin-top:10px}
@@ -1466,6 +1480,16 @@ function renderCreator(){
    '<div class="bio"><p>Builds vibrant, <b>anime-inspired worlds</b>.</p><p>Character design. Storytelling. Original IP.</p><p>Inspired by Japan, anime, mecha and future tech.</p><p>Bold colours that bridge <b>digital collectibles</b> and entertainment, going <b>beyond collectibles</b> into animation.</p></div>'+
    '<div class="term"><p>&gt; LOADING PROFILE ........ <b>OK</b></p><p>&gt; CLASS ........ <b>CREATOR</b></p><p>&gt; STATUS ........ <b>ONLINE</b><span class="cur"></span></p></div></div>'+
    '<div class="stats"><div class="stat"><b>100+</b><span>Unique 1/1 characters</span></div><div class="stat"><b>800K+</b><span>Following across platforms</span></div><div class="stat"><b>Web3</b><span>Art community &amp; animated series</span></div></div></section>'+
+   '<section class="mile">'+circuit(1200,900,12,23,"var(--ink)",.18,"var(--pink)")+
+   '<div class="hbar" style="padding:0"><span>SEC_02 // MILESTONES</span><i class="rul"></i><span class="blink">&#9679; VERIFIED</span></div>'+
+   '<div class="seg-h"><div><h2 class="h2">Creative history</h2><p>Transmission continues.</p></div></div>'+
+   '<div class="mg">'+
+    '<article class="mc"><div class="mi"><img src="images/creator/log-profile.webp" alt="Grid of 1/1 characters by SujiPop" loading="lazy"></div><div class="mt"><small>LOG_01</small><h3>Founder profile loaded</h3><p>Reputable artist on <a href="https://drip.haus/sujipop" target="_blank" rel="noopener">drip.haus</a>. 100+ unique 1/1 characters created.</p></div></article>'+
+    '<article class="mc"><div class="mi"><img src="images/creator/log-sale.webp" alt="Embroidered SujiPop artwork" loading="lazy"></div><div class="mt"><small>LOG_02</small><h3>Sales record</h3><p>ATH event: SujiPop1000. Collab with solanapoet. 100 SOL.</p></div></article>'+
+    '<article class="mc"><div class="mi"><img src="images/creator/log-solana.webp" alt="SujiPop artwork featured on the official Solana X account" loading="lazy"></div><div class="mt"><small>LOG_03</small><h3>Featured by Solana</h3><p>Artwork shown on the official Solana X account.</p></div></article>'+
+    '<article class="mc"><div class="mi"><img src="images/creator/log-breakpoint.webp" alt="Framed Light Unlocked artwork at Solana Breakpoint 2025" loading="lazy"></div><div class="mt"><small>LOG_04</small><h3>Solana Breakpoint 2025</h3><p>Artwork showcased with SunshinePledge. Art meets impact.</p></div></article>'+
+   '</div>'+
+   '<div class="mlink"><a class="btn" href="https://x.com/tenseiexe/status/2005084004077461589" target="_blank" rel="noopener">Read the full thread on X</a></div></section>'+
    '<div class="hazard"></div>'+
    '<section class="gal">'+circuit(1200,1400,16,61,"var(--ink)",.22,"var(--yellow)")+
    '<div class="hbar"><span>SEC_03 // ARCHIVE</span><i class="rul"></i><span class="blink">&#9679; LIVE</span></div>'+
