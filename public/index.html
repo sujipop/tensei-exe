@@ -316,6 +316,8 @@ main{padding-top:var(--hh);min-height:100svh}
 .ep{position:relative;display:block;text-decoration:none;color:var(--ink);filter:drop-shadow(5px 5px 0 var(--ink));transition:transform .2s}
 .ep:hover{transform:translateY(-6px)}
 .ep .th{position:relative;aspect-ratio:9/16;overflow:hidden;background:var(--c);clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
+.ep .wm{position:absolute;left:8px;top:8px;z-index:2;background:var(--mint);color:var(--ink);font:700 .58rem/1 var(--display);letter-spacing:.14em;text-transform:uppercase;padding:5px 7px}
+.ep .pbr{position:absolute;left:0;bottom:0;height:8px;background:var(--pink);z-index:2;box-shadow:0 0 0 2px var(--ink)}
 .ep .th img{width:100%;height:100%;object-fit:cover}
 .ep .th .n{position:absolute;inset:0;display:grid;place-items:center;font:700 clamp(4rem,10vw,6rem)/1 var(--display);color:var(--ink);opacity:.85}
 .ep .lab{position:absolute;left:0;right:0;bottom:0;background:var(--ink);color:var(--white);padding:10px 12px;display:flex;justify-content:space-between;gap:6px;font:700 .8rem/1 var(--display);letter-spacing:.14em;text-transform:uppercase}
@@ -1094,11 +1096,25 @@ function renderNFT(){
   $$(".deck").forEach(function(d){d.dispatchEvent(new Event("scroll"))});
 }
 
+/* ---------- WATCH PROGRESS (saved in this browser only) ---------- */
+function pget(){try{return JSON.parse(localStorage.getItem("tprog")||"{}")||{}}catch(e){return {}}}
+function pset(o){try{localStorage.setItem("tprog",JSON.stringify(o))}catch(e){}}
+function fmtT(t){t=Math.floor(t);var m=Math.floor(t/60),r=t%60;return m+":"+(r<10?"0":"")+r}
+function contFor(s){
+  var o=pget(),best=null,bn=0;
+  s.episodes.forEach(function(e,i){var r=o[s.id+"-"+(i+1)];if(r&&e.video&&(!best||r.u>best.u)){best=r;bn=i+1}});
+  if(!best)return null;
+  if(!best.done&&best.t>=3)return {n:bn,t:best.t};
+  if(best.done&&bn<s.episodes.length&&s.episodes[bn].video)return {n:bn+1,t:0};
+  return null;
+}
 /* ---------- SERIES ---------- */
 function thumbHTML(s,e,i){
   var c=PAL[(i+ (s.id.length))%4];
   if(c===s.color)c=PAL[(i+1+s.id.length)%4];
-  return '<div class="th" style="--c:'+c+'">'+(e.thumb?'<img src="'+esc(tv(e.thumb))+'" alt="" loading="lazy" onerror="this.outerHTML=\'<div class=n>'+(i+1)+'</div>\'">':'<div class="n">'+(i+1)+'</div>')+'</div>';
+  var r=pget()[s.id+"-"+(i+1)],mk="";
+  if(r&&e.video){mk=r.done?'<span class="wm">&#10003; Watched</span>':(r.t>=3&&r.d?'<i class="pbr" style="width:'+Math.min(100,Math.round(r.t/r.d*100))+'%"></i>':"")}
+  return '<div class="th" style="--c:'+c+'">'+mk+(e.thumb?'<img src="'+esc(tv(e.thumb))+'" alt="" loading="lazy" onerror="this.outerHTML=\'<div class=n>'+(i+1)+'</div>\'">':'<div class="n">'+(i+1)+'</div>')+'</div>';
 }
 function renderSeries(){
   setActive("series");setTitle("Series");
@@ -1127,9 +1143,10 @@ function mqText(s){var g=(s.genres||[]).join(" // ");return '<span>'+esc(s.title
 function renderShow(s){
   setActive("series");setTitle(s.title);
   var first=0;for(var i=0;i<s.episodes.length;i++){if(s.episodes[i].video){first=i;break}}
+  var ct=contFor(s);
   app.innerHTML='<div class="pg"><section class="showhead sh-'+esc(s.showLayout||"ovr")+'" style="--c:'+esc(s.color||PAL[0])+';--posm:'+esc(s.bannerPosM||s.bannerPos||"50% 50%")+';--n:\'0'+(SERIES.indexOf(s)+1)+'\'"><img src="'+esc(s.banner||s.poster)+'" alt="" style="object-position:'+esc(s.bannerPos||"50% 50%")+'"><div class="bhud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="in">'+
     '<a class="back" href="#/series">&#9664; All series</a><div class="genres">'+(s.genres||[]).map(function(g){return '<span>'+esc(g)+'</span>'}).join("")+'</div>'+
-    '<h1>'+esc(s.title)+'</h1><p class="sd">'+esc(s.description||s.tagline||"")+'</p><p style="margin-top:20px"><a class="btn" data-watch href="#/watch/'+esc(s.id)+'/'+(first+1)+'">&#9654; Watch episode '+(first+1)+'</a></p></div></section>'+
+    '<h1>'+esc(s.title)+'</h1><p class="sd">'+esc(s.description||s.tagline||"")+'</p><p style="margin-top:20px">'+(ct?'<a class="btn" data-watch href="#/watch/'+esc(s.id)+'/'+ct.n+'">&#9654; Continue episode '+ct.n+(ct.t?' &middot; '+fmtT(ct.t):'')+'</a> <a class="btn ghost" data-watch href="#/watch/'+esc(s.id)+'/'+(first+1)+'">From the start</a>':'<a class="btn" data-watch href="#/watch/'+esc(s.id)+'/'+(first+1)+'">&#9654; Watch episode '+(first+1)+'</a>')+'</p></div></section>'+
     '<section class="epsec"><h2 class="h2">Episodes</h2><div class="epgrid">'+s.episodes.map(function(e,i){
       return '<a class="ep" style="--i:'+i+'" data-watch href="#/watch/'+esc(s.id)+'/'+(i+1)+'" aria-label="Play '+esc(epTitle(e,i))+'">'+thumbHTML(s,e,i)+(e.video?'<span class="play"></span>':'<span class="soon">Soon</span>')+
         '<div class="lab"><span>EP '+pad(i+1,2)+'</span><span>'+esc(e.length||"")+'</span></div></a>'}).join("")+'</div></section>'+footHTML()+'</div>';
@@ -1161,6 +1178,7 @@ function openPlayer(s,n){
 }
 function closePlayer(){
   if(!playerOpen)return;
+  saveProg();
   playerOpen=false;token++;clearTimeout(idleT2);P.classList.remove("idle");
   try{V.pause()}catch(e){}
   killHls();V.removeAttribute("src");try{V.load()}catch(e){}
@@ -1277,8 +1295,24 @@ $("#pshare").onclick=function(){
 };
 $("#pcm").addEventListener("keydown",function(e){e.stopPropagation()});
 ["touchstart","touchend"].forEach(function(ev){$("#pcm").addEventListener(ev,function(e){e.stopPropagation()},{passive:true});$("#prail").addEventListener(ev,function(e){e.stopPropagation()},{passive:true})});
+var prog={k:"",last:0,ok:false};
+function saveProg(){
+  var k=prog.k;if(!k||!prog.ok||V.readyState<1)return;
+  var d=V.duration,t=V.currentTime;if(!d||!isFinite(d)||t<3)return;
+  var o=pget(),done=t>=d-4;
+  o[k]={t:done?0:Math.floor(t),d:Math.floor(d),done:done,u:Date.now()};pset(o);
+}
+V.addEventListener("timeupdate",function(){var n=Date.now();if(n-prog.last>4000){prog.last=n;saveProg()}});
+V.addEventListener("pause",saveProg);
+window.addEventListener("pagehide",saveProg);
+document.addEventListener("visibilitychange",function(){if(document.hidden)saveProg()});
 function loadEp(n,dir){
+  saveProg();
   var s=cur.s,e=s.episodes[n-1];cur.n=n;var tk=++token;loadSoc();
+  prog.ok=false;prog.k=e.video?s.id+"-"+n:"";
+  var st=prog.k?pget()[prog.k]:null,resume=(st&&!st.done&&st.t>=3)?st.t:0;
+  V.addEventListener("loadedmetadata",function(){if(tk===token)prog.ok=true},{once:true});
+  if(resume)V.addEventListener("loadedmetadata",function(){if(tk!==token)return;try{V.currentTime=resume;toast("Resumed at "+fmtT(resume))}catch(x){}},{once:true});
   $("#ptitle").textContent=s.title+" · "+epTitle(e,n-1);
   $("#pcount").textContent=n+" / "+s.episodes.length;
   $("#pprev").disabled=n<=1;$("#pnext").disabled=n>=s.episodes.length;
