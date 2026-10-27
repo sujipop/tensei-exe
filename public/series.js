@@ -145,8 +145,8 @@ window.SERIES = [
     textPos: "right",
     showLayout: "ovr",
     episodes: [
-      { title: "Episode 1",  video: "https://vz-30b87a01-407.b-cdn.net/d61f4245-ca38-46d0-a13b-8beed95f95ee/playlist.m3u8", thumb: "images/dandelion-ep01.webp", length: "" },
-      { title: "Episode 2",  video: "https://vz-30b87a01-407.b-cdn.net/8781a94a-3994-4dd3-a8ea-fde9771c7fde/playlist.m3u8", thumb: "images/dandelion-ep02.webp", length: "" },
+      { title: "Episode 1",  video: "https://vz-30b87a01-407.b-cdn.net/d61f4245-ca38-46d0-a13b-8beed95f95ee/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/d61f4245-ca38-46d0-a13b-8beed95f95ee/thumbnail.jpg", length: "" },
+      { title: "Episode 2",  video: "https://vz-30b87a01-407.b-cdn.net/8781a94a-3994-4dd3-a8ea-fde9771c7fde/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/8781a94a-3994-4dd3-a8ea-fde9771c7fde/thumbnail.jpg", length: "" },
       { title: "Episode 3",  video: "https://vz-30b87a01-407.b-cdn.net/08e5e0ba-214e-48e1-acb2-59250b1b0a56/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/08e5e0ba-214e-48e1-acb2-59250b1b0a56/thumbnail.jpg", length: "" },
       { title: "Episode 4",  video: "https://vz-30b87a01-407.b-cdn.net/87f9e531-220d-4fc4-9ee1-c0c0134425f2/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/87f9e531-220d-4fc4-9ee1-c0c0134425f2/thumbnail.jpg", length: "" },
       { title: "Episode 5",  video: "https://vz-30b87a01-407.b-cdn.net/9832827b-9121-4e14-989e-63ea51e9353f/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/9832827b-9121-4e14-989e-63ea51e9353f/thumbnail.jpg", length: "" },
@@ -154,30 +154,7 @@ window.SERIES = [
       { title: "Episode 7",  video: "https://vz-30b87a01-407.b-cdn.net/0b68b3e6-35bf-435a-94b9-674272631520/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/0b68b3e6-35bf-435a-94b9-674272631520/thumbnail.jpg", length: "" },
       { title: "Episode 8",  video: "https://vz-30b87a01-407.b-cdn.net/efc47f14-5769-447c-ba6b-4fe58447acae/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/efc47f14-5769-447c-ba6b-4fe58447acae/thumbnail.jpg", length: "" },
       { title: "Episode 9",  video: "https://vz-30b87a01-407.b-cdn.net/467857dd-d60e-4629-ab2a-956dd6d341c0/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/467857dd-d60e-4629-ab2a-956dd6d341c0/thumbnail.jpg", length: "" },
-      { title: "Episode 10", video: "https://vz-30b87a01-407.b-cdn.net/19edbe4b-75ce-4391-bd73-08467e9437f8/playlist.m3u8", thumb: "images/dandelion-ep10.webp", length: "" }
-    ]
-  },
-  {
-    id: "shiba-express",
-    title: "Shiba Express",
-    tagline: "Courier service in a post-apocalyptic world.",
-    description: "Courier service in a post-apocalyptic world.",
-    genres: ["Action", "Sci-Fi"],
-    colors: ["#6effdb", "#c66eff", "#ff6de0"],
-    oneLiner: "Courier service in a post-apocalyptic world.",
-    color: "#6effdb",
-    poster: "images/shiba-poster.webp",
-    banner: "images/shiba-poster.webp",
-    bannerPos: "50% 16%",
-    bannerPosM: "50% 15%",
-    showLayout: "ovl",
-    episodes: [
-      { title: "Episode 1", video: "", thumb: "images/shiba-ep01.webp", length: "" },
-      { title: "Episode 2", video: "", thumb: "", length: "" },
-      { title: "Episode 3", video: "", thumb: "", length: "" },
-      { title: "Episode 4", video: "", thumb: "images/shiba-ep04.webp", length: "" },
-      { title: "Episode 5", video: "", thumb: "images/shiba-ep05.webp", length: "" },
-      { title: "Episode 6", video: "", thumb: "images/shiba-ep06.webp", length: "" }
+      { title: "Episode 10", video: "https://vz-30b87a01-407.b-cdn.net/19edbe4b-75ce-4391-bd73-08467e9437f8/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/19edbe4b-75ce-4391-bd73-08467e9437f8/thumbnail.jpg", length: "" }
     ]
   },
   {
@@ -197,9 +174,34 @@ window.SERIES = [
     showLayout: "ovrt",
     textPos: "right",
     episodes: [
-      { title: "Episode 1", video: "", thumb: "", length: "" },
-      { title: "Episode 2", video: "", thumb: "", length: "" },
-      { title: "Episode 3", video: "", thumb: "", length: "" }
+      { title: "Episode 1", video: "https://vz-30b87a01-407.b-cdn.net/8120f085-ab4b-4912-a26f-9157bd9af6f1/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/8120f085-ab4b-4912-a26f-9157bd9af6f1/thumbnail.jpg", length: "" },
+      { title: "Episode 2", video: "https://vz-30b87a01-407.b-cdn.net/44b242de-cc7a-498b-859d-eb90a6accfbb/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/44b242de-cc7a-498b-859d-eb90a6accfbb/thumbnail.jpg", length: "" },
+      { title: "Episode 3", video: "https://vz-30b87a01-407.b-cdn.net/650032aa-957c-47f3-8939-c2c07ed982a8/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/650032aa-957c-47f3-8939-c2c07ed982a8/thumbnail.jpg", length: "" },
+      { title: "Episode 4", video: "https://vz-30b87a01-407.b-cdn.net/7af13299-8c2b-4fef-84b8-a573ce0f8dc4/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/7af13299-8c2b-4fef-84b8-a573ce0f8dc4/thumbnail.jpg", length: "" },
+      { title: "Episode 5", video: "https://vz-30b87a01-407.b-cdn.net/26345f57-6c7b-4d1c-b622-7e055c63daad/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/26345f57-6c7b-4d1c-b622-7e055c63daad/thumbnail.jpg", length: "" }
+    ]
+  },
+  {
+    id: "shiba-express",
+    title: "Shiba Express",
+    tagline: "Courier service in a post-apocalyptic world.",
+    description: "Courier service in a post-apocalyptic world.",
+    genres: ["Action", "Sci-Fi"],
+    colors: ["#6effdb", "#c66eff", "#ff6de0"],
+    oneLiner: "Courier service in a post-apocalyptic world.",
+    color: "#6effdb",
+    poster: "images/shiba-poster.webp",
+    banner: "images/shiba-poster.webp",
+    bannerPos: "50% 16%",
+    bannerPosM: "50% 15%",
+    showLayout: "ovl",
+    episodes: [
+      { title: "Episode 1", video: "https://vz-30b87a01-407.b-cdn.net/a4c59ac7-2538-4287-bf1f-fe08a5bf2f2c/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/a4c59ac7-2538-4287-bf1f-fe08a5bf2f2c/thumbnail.jpg", length: "" },
+      { title: "Episode 2", video: "https://vz-30b87a01-407.b-cdn.net/a526041e-9c10-4808-9d7d-55621379bc77/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/a526041e-9c10-4808-9d7d-55621379bc77/thumbnail.jpg", length: "" },
+      { title: "Episode 3", video: "https://vz-30b87a01-407.b-cdn.net/2e20c923-21c3-4705-b50d-85b10f79a7ce/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/2e20c923-21c3-4705-b50d-85b10f79a7ce/thumbnail.jpg", length: "" },
+      { title: "Episode 4", video: "https://vz-30b87a01-407.b-cdn.net/401b136f-c3b3-4cd4-8aab-3945a8ab1da5/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/401b136f-c3b3-4cd4-8aab-3945a8ab1da5/thumbnail.jpg", length: "" },
+      { title: "Episode 5", video: "https://vz-30b87a01-407.b-cdn.net/379cd5e7-e33b-4c07-96e1-46b06b7cf1e5/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/379cd5e7-e33b-4c07-96e1-46b06b7cf1e5/thumbnail.jpg", length: "" },
+      { title: "Episode 6", video: "https://vz-30b87a01-407.b-cdn.net/e9e92177-a6a1-45b0-9ab0-a3097f08801c/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/e9e92177-a6a1-45b0-9ab0-a3097f08801c/thumbnail.jpg", length: "" }
     ]
   }
 ];
