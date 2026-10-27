@@ -191,7 +191,7 @@ window.SERIES = [
     color: "#c66eff",
     poster: "images/doomsday-poster.webp",
     banner: "images/doomsday-banner.webp",
-    bannerPos: "50% 9%",
+    bannerPos: "50% 14%",
     bannerPosM: "50% 12%",
     bannerZoomM: 1.3,
     showLayout: "ovrt",
