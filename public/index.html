@@ -270,6 +270,7 @@ main{padding-top:var(--hh);min-height:100svh}
 .mintbig:hover{background:var(--yellow);animation:none}
 .mintbig svg{width:1em;height:1em}
 @keyframes mp{50%{transform:scale(1.045)}}
+.trade{position:relative;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px;margin-top:34px}.trade span{flex-basis:100%;text-align:center;font:700 .78rem/1 var(--display);letter-spacing:.22em;text-transform:uppercase;color:var(--ink)}.trade a{font:700 .85rem/1 var(--display);letter-spacing:.12em;text-transform:uppercase;text-decoration:none;background:var(--ink);color:var(--white);padding:13px 18px;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}.trade a:hover{background:var(--yellow);color:var(--ink)}
 .mintsh{display:inline-block;filter:drop-shadow(7px 7px 0 var(--purple))}
 .seg{padding:clamp(40px,7vw,80px) 0 clamp(46px,7vw,90px);position:relative}
 .seg.y{background:var(--yellow);color:var(--ink)}
@@ -1085,6 +1086,7 @@ function deckSection(cls,title,sub,items,id,sec,seed,col,bo,fc){
     '<div class="seg-h"><div><h2 class="h2">'+title+'</h2></div><div class="arrows"><button type="button" data-d="-1" data-t="'+id+'" aria-label="Previous">&#9664;</button><button type="button" data-d="1" data-t="'+id+'" aria-label="Next">&#9654;</button></div></div>'+
     '<div class="hudf nohc">'+hudCorners()+'<div class="deck curve stack" id="'+id+'" data-n="'+n+'" tabindex="0" aria-label="'+esc(title)+' (scrollable, loops)">'+cards+'</div></div></section>';
 }
+function tradeHTML(){return '<div class="trade"><span>Trade Tensei on</span>'+(SITE.trade||[]).map(function(t){return '<a href="'+esc(t[1])+'" target="_blank" rel="noopener">'+esc(t[0])+'</a>'}).join('')+'</div>'}
 function mintBtn(){return '<span class="mintsh"><a class="mintbig" href="'+esc(SITE.mint)+'" target="_blank" rel="noopener">Mint a Tensei <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3"/></svg></a></span>'}
 function heroDeck(items){
   var n=items.length,cards="",k;
@@ -1101,7 +1103,7 @@ function renderNFT(){
    heroDeck(T)+
    '<div class="hazard"></div>'+
    deckSection("p","Tensei 1/1 Characters","Hand-made. One of a kind.",O,"deck2","SEC_02 // ONE_OF_ONE",33,"var(--ink)",.25,"var(--yellow)")+
-   '<section class="cta-band">'+circuit(1200,420,8,47,"var(--ink)",.22,"var(--white)")+'<h2 class="h2">Get your Tensei</h2>'+mintBtn()+'</section>'+footHTML()+'</div>';
+   '<section class="cta-band">'+circuit(1200,420,8,47,"var(--ink)",.22,"var(--white)")+'<h2 class="h2">Get your Tensei</h2>'+mintBtn()+tradeHTML()+'</section>'+footHTML()+'</div>';
   $$(".deck").forEach(makeCurve);
   wireArrows();
   $$(".card-w.hasv").forEach(function(w){

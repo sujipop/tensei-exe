@@ -33,6 +33,12 @@ window.SITE = {
   sujicorpPoster: "images/sujicorp.webp",
   name: "TENSEI.EXE",
   mint: "https://www.launchmynft.io/mint/tensei_exe",
+  trade: [
+    ["SolOnChain", "https://www.solonchain.io/marketplace/collection/tenseiexe"],
+    ["Orbis", "https://www.orbisonsol.io/marketplace/tenseiexe"],
+    ["Magic Eden", "https://magiceden.io/marketplace/tenseiexe"],
+    ["Tensor", "https://www.tensor.trade/trade/tenseiexe"]
+  ],
   // Social links. Each row: icon name, address, label (label is only for screen readers and the hover tip)
   socials: [
     ["instagram", "https://www.instagram.com/tensei_exe/", "Instagram"],
