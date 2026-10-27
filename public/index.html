@@ -310,7 +310,7 @@ main{padding-top:var(--hh);min-height:100svh}
 .banner:hover .go{background:var(--yellow)}
 .banner .eps{position:absolute;right:16px;top:14px;z-index:2}
 .banner + .banner{border-top:5px solid var(--ink)}
-@media (min-width:701px){.banner{aspect-ratio:auto;height:calc(100svh - var(--hh));max-height:none;min-height:480px;scroll-snap-align:start}html:has(.banners){scroll-snap-type:y proximity;scroll-padding-top:var(--hh)}}
+@media (min-width:701px){html:has(.banners) .foot{scroll-snap-align:end}.banner{aspect-ratio:auto;height:calc(100svh - var(--hh));max-height:none;min-height:480px;scroll-snap-align:start}html:has(.banners){scroll-snap-type:y proximity;scroll-padding-top:var(--hh)}}
 
 .showhead{position:relative;min-height:min(70svh,560px);display:flex;align-items:flex-end;background:var(--c);isolation:isolate;overflow:hidden;border-bottom:5px solid var(--ink)}
 .showhead>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
@@ -1479,7 +1479,7 @@ function renderCreator(){
    '<section class="chero grid-bg">'+circuit(1200,760,13,9,"var(--purple)",.5,"var(--mint)")+'<i class="sweep"></i>'+
    '<div class="idc">'+hudCorners()+'<span class="lab">ID // SUJIPOP_001</span><div class="ph"><img src="'+esc((window.SITE&&SITE.profile)||"images/creator/sujipop.webp")+'" alt="SujiPop, digital artist and creator"></div><span class="st"><span class="blink">&#9679;</span> Online</span></div>'+
    '<div><span class="tag">About the creator</span><h1 class="h2" style="margin-top:16px">Suji<b>Pop</b></h1><p class="role">Digital artist &amp; creator</p>'+
-   '<div class="bio"><p>Builds vibrant, <b>anime-inspired worlds</b>.</p><p>Character design. Storytelling. Original IP.</p><p>Inspired by Japan, anime, mecha and future tech.</p><p>Bold colours that bridge <b>digital collectibles</b> and entertainment, going <b>beyond collectibles</b> into animation.</p></div>'+
+   '<div class="bio"><p>Builds vibrant, <b>anime-inspired worlds</b>.</p><p>Character design. Storytelling. Original IP.</p><p>Inspired by anime, mecha and future tech.</p><p>Bold colours that bridge <b>digital collectibles</b> and entertainment, going <b>beyond collectibles</b> into animation.</p></div>'+
    '<div class="term"><p>&gt; LOADING PROFILE ........ <b>OK</b></p><p>&gt; CLASS ........ <b>CREATOR</b></p><p>&gt; STATUS ........ <b>ONLINE</b><span class="cur"></span></p></div></div>'+
    '<div class="stats"><div class="stat"><b>100+</b><span>Unique 1/1 characters</span></div><div class="stat"><b>800K+</b><span>Following across platforms</span></div><div class="stat"><b>Web3</b><span>Art community &amp; animated series</span></div></div></section>'+
    '<section class="mile">'+circuit(1200,900,12,23,"var(--ink)",.18,"var(--pink)")+
@@ -1491,7 +1491,7 @@ function renderCreator(){
     '<article class="mc"><button type="button" class="mi" data-big="images/creator/log-solana-big.webp" data-alt="SujiPop artwork featured on the official Solana X account" aria-label="Zoom: Featured by Solana"><img src="images/creator/log-solana.webp" alt="SujiPop artwork featured on the official Solana X account" loading="lazy"></button><div class="mt"><small>LOG_03</small><h3>Featured by Solana</h3><p>Artwork shown on the official Solana X account.</p><a class="ml" href="https://x.com/solana/status/1977422635546898634" target="_blank" rel="noopener">View post &#8599;</a></div></article>'+
     '<article class="mc"><button type="button" class="mi" data-big="images/creator/log-breakpoint-big.webp" data-alt="Light Unlocked artwork shown at Solana Breakpoint 2025" aria-label="Zoom: Solana Breakpoint 2025"><img src="images/creator/log-breakpoint.webp" alt="Light Unlocked artwork shown at Solana Breakpoint 2025" loading="lazy"></button><div class="mt"><small>LOG_04</small><h3>Solana Breakpoint 2025</h3><p>Artwork showcased with SunshinePledge. Art meets impact.</p><a class="ml" href="https://x.com/infinitylabsnft/status/2000427409624182984" target="_blank" rel="noopener">View post &#8599;</a></div></article>'+
    '</div>'+
-   '<div class="mlink"><a class="btn" href="https://x.com/tenseiexe/status/2005084004077461589" target="_blank" rel="noopener">Read the full thread on X</a></div></section>'+
+   '<div class="mlink"><a class="btn" href="https://x.com/suji_pop" target="_blank" rel="noopener">Follow SujiPop on X</a></div></section>'+
    '<div class="hazard"></div>'+
    '<section class="gal">'+circuit(1200,1400,16,61,"var(--ink)",.22,"var(--yellow)")+
    '<div class="hbar"><span>SEC_03 // ARCHIVE</span><i class="rul"></i><span class="blink">&#9679; LIVE</span></div>'+
