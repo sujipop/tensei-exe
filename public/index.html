@@ -543,35 +543,18 @@ section>.circ,section>.sweep,section>.chipdeco{position:absolute;z-index:0}
 .showhead p{font-size:.95rem;max-width:40ch;line-height:1.4}
 .showhead .in{max-width:620px}
 
-/* desktop series header: text beside the art, art never dimmed */
+/* desktop series header: text sits low, on the characters' bodies; art is never dimmed */
 @media (min-width:701px){
   .showhead{min-height:min(74svh,640px)}
   .showhead::after{display:none}
-  .showhead p{background:var(--ink);display:inline-block;padding:9px 13px;max-width:44ch}
+  .showhead p.sd{background:var(--ink);display:inline-block;padding:9px 13px;max-width:44ch}
   .showhead h1{text-shadow:4px 4px 0 var(--ink)}
-  .sh-ovr .in{margin-left:auto;margin-right:clamp(24px,4vw,64px)}
-  .sh-sl,.sh-sr{display:grid;align-items:center;background:var(--ink)}
-  .sh-sl{grid-template-columns:minmax(0,1fr) auto}
-  .sh-sr{grid-template-columns:auto minmax(0,1fr)}
-  .sh-sl>img,.sh-sr>img{position:relative;inset:auto;z-index:0;width:auto;height:min(74svh,640px);max-width:62vw;display:block;grid-row:1}
-  .sh-sl>img{grid-column:2;border-left:6px solid var(--c)}
-  .sh-sr>img{grid-column:1;border-right:6px solid var(--c)}
-  .sh-sl .in,.sh-sr .in{grid-row:1;grid-column:1;position:relative;z-index:2;padding:clamp(28px,5vw,80px)}
-  .sh-sr .in{grid-column:2}
-  .sh-sl .bhud,.sh-sr .bhud{display:none}
-  .sh-sl h1,.sh-sr h1{font-size:clamp(2.6rem,6vw,5.2rem)}
-  /* flat colour panel beside the art */
-  .sh-sl,.sh-sr{background:var(--c);color:var(--ink)}
-  .sh-sl h1,.sh-sr h1{color:var(--ink);text-shadow:none}
-  .sh-sl p,.sh-sr p{color:var(--white)}
-  .sh-sl .genres span,.sh-sr .genres span{border-color:var(--ink);color:var(--ink)}
-  .sh-sl .in::after,.sh-sr .in::after{content:var(--n);position:absolute;right:clamp(20px,3vw,48px);top:clamp(8px,2vw,28px);font:700 clamp(5rem,13vw,11rem)/.8 var(--display);color:transparent;-webkit-text-stroke:3px rgba(20,8,31,.28);pointer-events:none;z-index:-1}
-  .sh-sl .in,.sh-sr .in{width:100%}
-  /* Dandelion: the art already shows the name, so keep only a small block in the empty lower right */
-  .sh-ovr .in{padding:0 clamp(24px,4vw,60px) clamp(24px,4vw,48px);margin:0 0 0 auto;max-width:520px;text-align:left}
+  .showhead .genres{display:none}
+  .showhead .back{position:absolute;left:clamp(24px,4vw,56px);top:clamp(24px,3vw,40px)}
+  .showhead .in{padding:0 clamp(24px,4vw,60px) clamp(24px,4vw,48px);max-width:560px}
+  .sh-ovr .in{margin:0 0 0 auto}
   .sh-ovr h1{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0}
-  .sh-ovr .genres{display:none}
-  .sh-ovr .back{position:absolute;left:clamp(24px,4vw,56px);top:clamp(24px,3vw,40px)}
+  .sh-ovl h1{font-size:clamp(2.2rem,4.6vw,3.8rem);white-space:nowrap;margin:0 0 10px}
 }
 @media (max-width:700px){
   .showhead{display:block;min-height:0;background:var(--ink)}
@@ -1145,7 +1128,7 @@ function renderShow(s){
   var first=0;for(var i=0;i<s.episodes.length;i++){if(s.episodes[i].video){first=i;break}}
   app.innerHTML='<div class="pg"><section class="showhead sh-'+esc(s.showLayout||"ovr")+'" style="--c:'+esc(s.color||PAL[0])+';--posm:'+esc(s.bannerPosM||s.bannerPos||"50% 50%")+';--n:\'0'+(SERIES.indexOf(s)+1)+'\'"><img src="'+esc(s.banner||s.poster)+'" alt="" style="object-position:'+esc(s.bannerPos||"50% 50%")+'"><div class="bhud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="in">'+
     '<a class="back" href="#/series">&#9664; All series</a><div class="genres">'+(s.genres||[]).map(function(g){return '<span>'+esc(g)+'</span>'}).join("")+'</div>'+
-    '<h1>'+esc(s.title)+'</h1><p>'+esc(s.description||s.tagline||"")+'</p><p style="margin-top:20px"><a class="btn" data-watch href="#/watch/'+esc(s.id)+'/'+(first+1)+'">&#9654; Watch episode '+(first+1)+'</a></p></div></section>'+
+    '<h1>'+esc(s.title)+'</h1><p class="sd">'+esc(s.description||s.tagline||"")+'</p><p style="margin-top:20px"><a class="btn" data-watch href="#/watch/'+esc(s.id)+'/'+(first+1)+'">&#9654; Watch episode '+(first+1)+'</a></p></div></section>'+
     '<section class="epsec"><h2 class="h2">Episodes</h2><div class="epgrid">'+s.episodes.map(function(e,i){
       return '<a class="ep" style="--i:'+i+'" data-watch href="#/watch/'+esc(s.id)+'/'+(i+1)+'" aria-label="Play '+esc(epTitle(e,i))+'">'+thumbHTML(s,e,i)+(e.video?'<span class="play"></span>':'<span class="soon">Soon</span>')+
         '<div class="lab"><span>EP '+pad(i+1,2)+'</span><span>'+esc(e.length||"")+'</span></div></a>'}).join("")+'</div></section>'+footHTML()+'</div>';

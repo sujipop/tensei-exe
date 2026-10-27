@@ -170,7 +170,7 @@ window.SERIES = [
     banner: "images/shiba-poster.webp",
     bannerPos: "50% 16%",
     bannerPosM: "50% 15%",
-    showLayout: "sl",
+    showLayout: "ovl",
     episodes: [
       { title: "Episode 1", video: "", thumb: "images/shiba-ep01.webp", length: "" },
       { title: "Episode 2", video: "", thumb: "", length: "" },
@@ -191,10 +191,10 @@ window.SERIES = [
     color: "#c66eff",
     poster: "images/doomsday-poster.webp",
     banner: "images/doomsday-banner.webp",
-    bannerPos: "50% 19%",
+    bannerPos: "50% 20%",
     bannerPosM: "50% 12%",
     bannerZoomM: 1.3,
-    showLayout: "sr",
+    showLayout: "ovl",
     textPos: "right",
     episodes: [
       { title: "Episode 1", video: "", thumb: "", length: "" },
