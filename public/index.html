@@ -879,7 +879,7 @@ function renderLore(){
     } else if(s.fin){
       html+='<section class="scene fin s-ink" data-i="'+i+'" style="--h:'+s.h+'"><div class="stick"><div class="ring"></div><div class="big jp" aria-hidden="true">転生</div>'+
         '<p class="rb">Dive into the massive world of <em>Tensei.exe</em></p>'+
-        '<div class="ctas"><a class="btn pink" href="'+esc(SITE.mint)+'" target="_blank" rel="noopener">Mint a Tensei</a><a class="btn" href="#/series">Watch the series</a><a class="btn ghost" href="#/creator">Meet SujiPop</a></div>'+socHTML()+'</div></section>';
+        '<div class="ctas"><a class="btn pink" href="'+esc(SITE.mint)+'" target="_blank" rel="noopener">Mint Tensei</a><a class="btn" href="#/series">Watch the series</a><a class="btn ghost" href="#/creator">Meet SujiPop</a></div>'+socHTML()+'</div></section>';
     } else {
       var sv=s.video?SITE[s.video+"Video"]:"";
       html+='<section class="scene '+s.cls+'" data-i="'+i+'" data-hook="'+(s.hook||"")+'" style="--h:'+s.h+'"><div class="stick">'+(sv?'<video class="sv" muted playsinline preload="metadata" poster="'+esc(SITE[s.video+"Poster"]||"")+'" src="'+esc(sv)+'" aria-hidden="true"></video><div class="vhud" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="vtime"></div><div class="vbar"><span></span></div>':'<div class="vis">'+s.vis()+'</div>')+(s.extra||'')+'<div class="txt"><div class="ch">'+s.tag+'</div><div class="lines">'+
@@ -1109,7 +1109,7 @@ function deckSection(cls,title,sub,items,id,sec,seed,col,bo,fc){
     '<div class="hudf nohc">'+hudCorners()+'<div class="deck curve stack" id="'+id+'" data-n="'+n+'" tabindex="0" aria-label="'+esc(title)+' (scrollable, loops)">'+cards+'</div></div></section>';
 }
 function tradeHTML(){return '<div class="trade"><span>Trade Tensei on</span>'+(SITE.trade||[]).map(function(t){return '<a href="'+esc(t[1])+'" target="_blank" rel="noopener">'+esc(t[0])+'</a>'}).join('')+'</div>'}
-function mintBtn(){return '<span class="mintsh"><a class="mintbig" href="'+esc(SITE.mint)+'" target="_blank" rel="noopener">Mint a Tensei <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3"/></svg></a></span>'}
+function mintBtn(){return '<span class="mintsh"><a class="mintbig" href="'+esc(SITE.mint)+'" target="_blank" rel="noopener">Mint Tensei <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3"/></svg></a></span>'}
 function heroDeck(items){
   var n=items.length,cards="",k;
   for(k=0;k<3;k++)items.forEach(function(c,i){cards+=cardHTML(c,i,k!==1)});
