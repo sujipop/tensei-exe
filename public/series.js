@@ -177,10 +177,9 @@ window.SERIES = [
     oneLiner: "Betrayed by his own brother, a mafia don is reborn as a doomsday baddie.",
     color: "#c66eff",
     poster: "images/doomsday-poster.webp",
-    banner: "images/doomsday-banner.webp",
-    bannerPos: "50% 14%",
-    bannerPosM: "50% 12%",
-    bannerZoomM: 1.3,
+    banner: "images/doomsday-banner-2.webp",
+    bannerPos: "50% 13%",
+    bannerPosM: "50% 18%",
     showLayout: "ovrt",
     textPos: "right",
     episodes: [
