@@ -1176,6 +1176,21 @@ function renderShow(s){
 /* ---------- PLAYER ---------- */
 var P=$("#player"),V=$("#vid"),PH=$("#pph"),playerOpen=false,cur={s:null,n:1},hls=null,token=0,hintT=0;
 function tv(u){var v=SITE.thumbVersion;return(v&&/^https?:/.test(u))?u+(u.indexOf('?')<0?'?':'&')+'v='+v:u}
+/* Tablets (iPad Safari in particular) mis-size the video from CSS alone, so size the vertical frame in pixels */
+function fitVid(){
+  if(!playerOpen)return;
+  var big=window.matchMedia&&matchMedia("(min-width:700px)").matches;
+  if(!big){V.style.width="";V.style.height="";V.style.outline="";V.style.outlineOffset="";V.style.justifySelf="";V.style.aspectRatio="";return}
+  var ar=(V.videoWidth&&V.videoHeight)?V.videoWidth/V.videoHeight:9/16;
+  if(ar>=1){V.style.width="";V.style.height="";V.style.outline="";V.style.aspectRatio="";return}
+  var H=P.clientHeight||window.innerHeight,W=P.clientWidth||window.innerWidth;
+  var h=H,w=Math.min(W,Math.round(h*ar));
+  V.style.aspectRatio="auto";V.style.width=w+"px";V.style.height=h+"px";V.style.justifySelf="center";V.style.outline="3px solid var(--mint)";V.style.outlineOffset="-3px";
+}
+function fitSoon(){fitVid();setTimeout(fitVid,150);setTimeout(fitVid,500)}
+["resize","orientationchange"].forEach(function(ev){window.addEventListener(ev,fitSoon)});
+["fullscreenchange","webkitfullscreenchange"].forEach(function(ev){document.addEventListener(ev,fitSoon)});
+V.addEventListener("loadedmetadata",fitVid);
 function lockBody(on){document.body.classList.toggle("lock",on)}
 function enterFs(){
   var f=P.requestFullscreen||P.webkitRequestFullscreen;
@@ -1186,7 +1201,7 @@ function exitFs(){
   if(el){try{var x=document.exitFullscreen||document.webkitExitFullscreen;var r=x.call(document);if(r&&r.catch)r.catch(function(){})}catch(e){}}
 }
 function openPlayer(s,n){
-  playerOpen=true;P.hidden=false;lockBody(true);
+  playerOpen=true;P.hidden=false;lockBody(true);fitSoon();
   if(gesture){enterFs();fromShow=true}
   cur.s=s;
   showHint();wake();
