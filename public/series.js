@@ -143,6 +143,7 @@ window.SERIES = [
     bannerPos: "50% 50%",
     bannerPosM: "16% 50%",
     textPos: "right",
+    showLayout: "ovr",
     episodes: [
       { title: "Episode 1",  video: "https://vz-30b87a01-407.b-cdn.net/d61f4245-ca38-46d0-a13b-8beed95f95ee/playlist.m3u8", thumb: "images/dandelion-ep01.webp", length: "" },
       { title: "Episode 2",  video: "https://vz-30b87a01-407.b-cdn.net/8781a94a-3994-4dd3-a8ea-fde9771c7fde/playlist.m3u8", thumb: "images/dandelion-ep02.webp", length: "" },
@@ -169,6 +170,7 @@ window.SERIES = [
     banner: "images/shiba-poster.webp",
     bannerPos: "50% 16%",
     bannerPosM: "50% 15%",
+    showLayout: "sl",
     episodes: [
       { title: "Episode 1", video: "", thumb: "images/shiba-ep01.webp", length: "" },
       { title: "Episode 2", video: "", thumb: "", length: "" },
@@ -192,6 +194,7 @@ window.SERIES = [
     bannerPos: "50% 19%",
     bannerPosM: "50% 12%",
     bannerZoomM: 1.3,
+    showLayout: "sr",
     textPos: "right",
     episodes: [
       { title: "Episode 1", video: "", thumb: "", length: "" },
