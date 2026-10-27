@@ -194,7 +194,7 @@ window.SERIES = [
     bannerPos: "50% 20%",
     bannerPosM: "50% 12%",
     bannerZoomM: 1.3,
-    showLayout: "ovl",
+    showLayout: "ovrt",
     textPos: "right",
     episodes: [
       { title: "Episode 1", video: "", thumb: "", length: "" },
