@@ -365,7 +365,9 @@ main{padding-top:var(--hh);min-height:100svh}
 .mile .seg-h{padding-left:0;padding-right:0}.mile .hbar .blink{color:var(--ink)}
 .mg{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(10px,1.6vw,20px)}
 .mc{background:var(--ink);color:var(--white);display:grid;grid-template-rows:auto 1fr;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
-.mc .mi{aspect-ratio:1;overflow:hidden;background:#000}
+.mc .mi{aspect-ratio:1;overflow:hidden;background:#000;border:0;padding:0;cursor:zoom-in;display:block;width:100%}
+.mc .ml{justify-self:start;margin-top:4px;font:700 .72rem/1 var(--display);letter-spacing:.18em;text-transform:uppercase;text-decoration:none;color:var(--mint)}.mc .ml:hover{color:var(--yellow)}
+.mlb{position:fixed;inset:0;z-index:300;background:rgba(20,8,31,.94);display:grid;place-items:center;padding:3vh 3vw;cursor:zoom-out}.mlb img{max-width:94vw;max-height:92svh;object-fit:contain;display:block}.mlb button{position:absolute;top:14px;right:14px;width:44px;height:44px;background:var(--pink);color:var(--ink);border:0;font:700 1.2rem/1 var(--display);cursor:pointer}
 .mc img{width:100%;height:100%;object-fit:cover;object-position:50% 50%;display:block}
 .mc .mt{padding:16px 18px 20px;display:grid;gap:8px;align-content:start}
 .mc small{font:700 .66rem/1 var(--display);letter-spacing:.22em;color:var(--mint)}
@@ -1484,10 +1486,10 @@ function renderCreator(){
    '<div class="hbar" style="padding:0"><span>SEC_02 // MILESTONES</span><i class="rul"></i><span class="blink">&#9679; VERIFIED</span></div>'+
    '<div class="seg-h"><div><h2 class="h2">Creative history</h2><p>Transmission continues.</p></div></div>'+
    '<div class="mg">'+
-    '<article class="mc"><div class="mi"><img src="images/creator/log-profile.webp" alt="Grid of 1/1 characters by SujiPop" loading="lazy"></div><div class="mt"><small>LOG_01</small><h3>Founder profile loaded</h3><p>Reputable artist on <a href="https://drip.haus/sujipop" target="_blank" rel="noopener">drip.haus</a>. 100+ unique 1/1 characters created.</p></div></article>'+
-    '<article class="mc"><div class="mi"><img src="images/creator/log-sale.webp" alt="Embroidered SujiPop artwork" loading="lazy"></div><div class="mt"><small>LOG_02</small><h3>Sales record</h3><p>ATH event: SujiPop1000. Collab with solanapoet. 100 SOL.</p></div></article>'+
-    '<article class="mc"><div class="mi"><img src="images/creator/log-solana.webp" alt="SujiPop artwork featured on the official Solana X account" loading="lazy"></div><div class="mt"><small>LOG_03</small><h3>Featured by Solana</h3><p>Artwork shown on the official Solana X account.</p></div></article>'+
-    '<article class="mc"><div class="mi"><img src="images/creator/log-breakpoint.webp" alt="Framed Light Unlocked artwork at Solana Breakpoint 2025" loading="lazy"></div><div class="mt"><small>LOG_04</small><h3>Solana Breakpoint 2025</h3><p>Artwork showcased with SunshinePledge. Art meets impact.</p></div></article>'+
+    '<article class="mc"><button type="button" class="mi" data-big="images/creator/log-profile-big.webp" data-alt="Grid of 1/1 characters by SujiPop" aria-label="Zoom: Founder profile loaded"><img src="images/creator/log-profile.webp" alt="Grid of 1/1 characters by SujiPop" loading="lazy"></button><div class="mt"><small>LOG_01</small><h3>Founder profile loaded</h3><p>Reputable artist on drip.haus. 100+ unique 1/1 characters created.</p><a class="ml" href="https://drip.haus/sujipop" target="_blank" rel="noopener">View profile &#8599;</a></div></article>'+
+    '<article class="mc"><button type="button" class="mi" data-big="images/creator/log-sale-big.webp" data-alt="Embroidered SujiPop artwork" aria-label="Zoom: Sales record"><img src="images/creator/log-sale.webp" alt="Embroidered SujiPop artwork" loading="lazy"></button><div class="mt"><small>LOG_02</small><h3>Sales record</h3><p>ATH event: SujiPop1000. Collab with Degenpoet. 100 SOL.</p><a class="ml" href="https://x.com/solanapoet/status/1784830513967935617" target="_blank" rel="noopener">View post &#8599;</a></div></article>'+
+    '<article class="mc"><button type="button" class="mi" data-big="images/creator/log-solana-big.webp" data-alt="SujiPop artwork featured on the official Solana X account" aria-label="Zoom: Featured by Solana"><img src="images/creator/log-solana.webp" alt="SujiPop artwork featured on the official Solana X account" loading="lazy"></button><div class="mt"><small>LOG_03</small><h3>Featured by Solana</h3><p>Artwork shown on the official Solana X account.</p><a class="ml" href="https://x.com/solana/status/1977422635546898634" target="_blank" rel="noopener">View post &#8599;</a></div></article>'+
+    '<article class="mc"><button type="button" class="mi" data-big="images/creator/log-breakpoint-big.webp" data-alt="Light Unlocked artwork shown at Solana Breakpoint 2025" aria-label="Zoom: Solana Breakpoint 2025"><img src="images/creator/log-breakpoint.webp" alt="Light Unlocked artwork shown at Solana Breakpoint 2025" loading="lazy"></button><div class="mt"><small>LOG_04</small><h3>Solana Breakpoint 2025</h3><p>Artwork showcased with SunshinePledge. Art meets impact.</p><a class="ml" href="https://x.com/infinitylabsnft/status/2000427409624182984" target="_blank" rel="noopener">View post &#8599;</a></div></article>'+
    '</div>'+
    '<div class="mlink"><a class="btn" href="https://x.com/tenseiexe/status/2005084004077461589" target="_blank" rel="noopener">Read the full thread on X</a></div></section>'+
    '<div class="hazard"></div>'+
@@ -1497,6 +1499,17 @@ function renderCreator(){
    '<div class="hudf nohc nostripe">'+hudCorners()+'<div class="cgw"><div class="cg" id="cg">'+cells+'</div></div>'+
    '<div class="gstat"><span><b>'+n+'</b> files</span><span><b>'+vids+'</b> animated</span><span><b>'+(n-vids)+'</b> still</span></div></div></section>'+
    footHTML()+'</div>';
+  var mg=$(".mg");
+  if(mg)mg.addEventListener("click",function(e){
+    var b=e.target.closest("button[data-big]");if(!b)return;
+    var o=document.createElement("div");o.className="mlb";o.setAttribute("role","dialog");o.setAttribute("aria-label",b.getAttribute("data-alt"));
+    o.innerHTML='<img src="'+esc(b.getAttribute("data-big"))+'" alt="'+esc(b.getAttribute("data-alt"))+'"><button type="button" aria-label="Close">&#10005;</button>';
+    function shut(){document.removeEventListener("keydown",kd);o.remove();lockBody(false)}
+    function kd(ev){if(ev.key==="Escape")shut()}
+    o.addEventListener("click",shut);document.addEventListener("keydown",kd);
+    document.body.appendChild(o);lockBody(true);
+    cleanups.push(function(){if(o.parentNode)shut()});
+  });
   var cg=$("#cg");
   /* videos only play while on screen; reduced-motion keeps the still frame */
   var vs=$$("video[data-src]",cg),calm=window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches;
