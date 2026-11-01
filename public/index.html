@@ -337,6 +337,7 @@ main{padding-top:var(--hh);min-height:100svh}
 .ep .th img{width:100%;height:100%;object-fit:cover}
 .ep .th .n{position:absolute;inset:0;display:grid;place-items:center;font:700 clamp(4rem,10vw,6rem)/1 var(--display);color:var(--ink);opacity:.85}
 .ep .lab{position:absolute;left:0;right:0;bottom:0;background:var(--ink);color:var(--white);padding:10px 12px;display:flex;justify-content:space-between;gap:6px;font:700 .8rem/1 var(--display);letter-spacing:.14em;text-transform:uppercase}
+.ep .new{position:absolute;right:0;top:0;z-index:2;background:var(--mint);color:var(--ink);font:700 .65rem/1 var(--display);letter-spacing:.16em;padding:7px 9px 7px 11px;text-transform:uppercase;clip-path:polygon(8px 0,100% 0,100% 100%,0 100%)}
 .ep .soon{position:absolute;right:0;top:0;background:var(--pink);color:var(--ink);font:700 .65rem/1 var(--display);letter-spacing:.16em;padding:7px 9px 7px 11px;text-transform:uppercase;clip-path:polygon(8px 0,100% 0,100% 100%,0 100%)}
 .ep .play{position:absolute;left:50%;top:44%;width:52px;height:52px;margin:-26px 0 0 -26px;background:var(--yellow);clip-path:polygon(0 0,100% 50%,0 100%);transform:scale(.0);transition:.2s;z-index:1;border-radius:0}
 .ep:hover .play{transform:scale(.9)}
@@ -1221,7 +1222,7 @@ function renderShow(s){
     '<a class="back" href="#/series">&#9664; All series</a><button class="shr" id="shr" type="button" aria-label="Share"><svg viewBox="0 0 24 24"><path d="M12 15V4m0 0L8 8m4-4 4 4M5 12v8h14v-8"/></svg><span>Share</span></button><div class="genres">'+(s.genres||[]).map(function(g){return '<span>'+esc(g)+'</span>'}).join("")+'</div>'+
     '<h1>'+esc(s.title)+'</h1><p class="sd">'+esc(s.description||s.tagline||"")+'</p><p style="margin-top:20px">'+(ct?'<a class="btn" data-watch href="#/watch/'+esc(s.id)+'/'+ct.n+'">&#9654; Continue episode '+ct.n+(ct.t?' &middot; '+fmtT(ct.t):'')+'</a> <a class="btn ghost" data-watch href="#/watch/'+esc(s.id)+'/'+(first+1)+'">From the start</a>':'<a class="btn" data-watch href="#/watch/'+esc(s.id)+'/'+(first+1)+'">&#9654; Watch episode '+(first+1)+'</a>')+'</p></div></section>'+
     '<section class="epsec"><h2 class="h2">Episodes</h2><div class="epgrid">'+s.episodes.map(function(e,i){
-      return '<a class="ep" style="--i:'+i+'" data-watch href="#/watch/'+esc(s.id)+'/'+(i+1)+'" aria-label="Play '+esc(epTitle(e,i))+'">'+thumbHTML(s,e,i)+(e.video?'<span class="play"></span>':'<span class="soon">Soon</span>')+
+      return '<a class="ep" style="--i:'+i+'" data-watch href="#/watch/'+esc(s.id)+'/'+(i+1)+'" aria-label="Play '+esc(epTitle(e,i))+'">'+thumbHTML(s,e,i)+(e.isNew?'<span class="new">New</span>':'')+(e.video?'<span class="play"></span>':'<span class="soon">Soon</span>')+
         '<div class="lab"><span>EP '+pad(i+1,2)+'</span><span>'+esc(e.length||"")+'</span></div></a>'}).join("")+'</div></section>'+moreHTML(s)+footHTML()+'</div>';
   var sb=$("#shr");
   if(sb)sb.onclick=function(){
