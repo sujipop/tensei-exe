@@ -482,6 +482,8 @@ main{padding-top:var(--hh);min-height:100svh}
 #pcm .cerr{color:var(--pink);font-size:.78rem}
 #ptoast{position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:7;background:var(--yellow);color:var(--ink);padding:9px 14px;font:700 .8rem/1 var(--display);letter-spacing:.14em;text-transform:uppercase}
 #ptoast[hidden]{display:none}
+#pum{position:absolute;left:50%;bottom:90px;transform:translateX(-50%);z-index:7;background:var(--pink);color:var(--ink);border:0;padding:12px 18px;font:700 .85rem/1 var(--display);letter-spacing:.14em;text-transform:uppercase;cursor:pointer;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)}
+#pum[hidden]{display:none}
 @media (max-width:700px){#pcm{width:100%}}
 .pnav:hover{background:var(--pink)} .pnav[disabled]{opacity:.25;pointer-events:none}
 #pprev{left:max(14px,env(safe-area-inset-left))} #pnext{right:max(14px,env(safe-area-inset-right))}
@@ -1305,10 +1307,28 @@ function loadHls(cb){
   if(window.Hls)return cb();
   var sc=document.createElement("script");sc.src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js";sc.onload=cb;sc.onerror=function(){cb()};document.head.appendChild(sc);
 }
+/* sound: always start each episode with the viewer's own mute choice (unmuted by default).
+   Only when the browser refuses sound autoplay do we fall back to muted, and then offer one tap to unmute. */
+var userMuted=false,progMute=false,pum=null;
+V.addEventListener("volumechange",function(){if(progMute)return;userMuted=V.muted;if(!V.muted)hideUnmute()});
+function hideUnmute(){if(pum)pum.hidden=true}
+function showUnmute(){
+  if(!pum){pum=document.createElement("button");pum.id="pum";pum.type="button";pum.textContent="Tap to unmute";
+    pum.onclick=function(e){e.stopPropagation();progMute=false;userMuted=false;V.muted=false;hideUnmute()};P.appendChild(pum)}
+  pum.hidden=false;
+}
+function startPlay(){
+  progMute=true;V.muted=userMuted;progMute=false;
+  var pr=V.play();
+  if(pr&&pr.then)pr.then(function(){if(!V.muted)hideUnmute()},function(){});
+  if(pr&&pr.catch)pr.catch(function(){
+    progMute=true;V.muted=true;progMute=false;showUnmute();
+    var q=V.play();if(q&&q.catch)q.catch(function(){});
+  });
+}
 function playNow(tk){
   if(tk!==token)return;
-  var pr=V.play();
-  if(pr&&pr.catch)pr.catch(function(){try{V.muted=true;var q=V.play();if(q&&q.catch)q.catch(function(){})}catch(x){}});
+  startPlay();
 }
 /* Bunny can also serve a plain mp4 (if "MP4 Fallback" is on in the library). Try it when the stream fails. */
 function mp4Backup(url,tk,reason){
@@ -1432,8 +1452,7 @@ function loadEp(n,dir){
   V.onerror=function(){var c=V.error&&V.error.code;mp4Backup(e.video,tk,"The browser could not play this video"+(c?" (media error "+c+")":"")+".")};
   attach(e.video,tk,function(){
     if(tk!==token)return;
-    var pr=V.play();
-    if(pr&&pr.catch)pr.catch(function(){try{V.muted=true;var q=V.play();if(q&&q.catch)q.catch(function(){})}catch(x){}});
+    startPlay();
   });
 }
 function showPh(e,n,ended){
