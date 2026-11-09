@@ -314,7 +314,7 @@ window.chainRefresh=function(){
   $("#cstats").innerHTML='<div class="stat"><b>'+n+'</b>NFTs to update</div><div class="stat"><b>'+Object.keys(DONE).length+'</b>done</div><div class="stat"><b>~'+fee.toFixed(4)+'</b>SOL network fees (≈'+txs+' transactions)</div>';
   var ok=!!WALLET&&!busy&&n>0&&authOf().every(function(x){return x===WALLET});
   $("#runTest").disabled=!ok;$("#runAll").disabled=!ok||!Object.keys(DONE).length;$("#verify").disabled=!Object.keys(DONE).length||busy;
-  var w="";if(WALLET&&authOf().some(function(x){return x!==WALLET}))w='<div class="err">The connected wallet is not the collection's update authority ('+esc(authOf().join(", "))+'). Switch to that wallet before continuing.</div>';
+  var w="";if(WALLET&&authOf().some(function(x){return x!==WALLET}))w='<div class="err">The connected wallet is not the update authority of the collection ('+esc(authOf().join(", "))+'). Switch to that wallet before continuing.</div>';
   $("#wwarn").innerHTML=w;
 };
 function loadChain(){
