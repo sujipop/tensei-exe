@@ -73,11 +73,27 @@ code{background:#ececf2;padding:1px 5px}
 <div id="scanOut"></div>
 </section>
 
+<section class="card hide" id="sChain">
+<h2>4. Put the changes on chain</h2>
+<p class="note">This changes your NFTs for real and costs a small network fee. Start with the test. Each changed NFT gets a new metadata file (uploaded to Arweave through Irys, free for files this small) and one update that points it to the new file.</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button id="wconn">Connect wallet</button><span id="waddr" class="note"></span></div>
+<div id="wwarn"></div>
+<div class="stats" id="cstats"></div>
+<div class="row" style="margin-top:12px">
+ <div><label for="ntest">Test: how many NFTs</label><input id="ntest" type="number" min="1" max="20" value="3"></div>
+ <div><button id="runTest" disabled>Run test</button></div>
+ <div><button id="runAll" disabled>Update all remaining</button></div>
+ <div><button id="verify" class="alt" disabled>Verify on chain</button></div>
+</div>
+<div class="bar"><i id="cprog"></i></div>
+<div id="clog" class="note"></div>
+</section>
+
 <section class="card hide" id="sStaged">
 <h2>3. Staged changes</h2>
 <div id="stagedList" class="note">Nothing staged yet.</div>
 <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
- <button id="exp" disabled>Download changed metadata (.json)</button>
+ <button id="plan" class="alt">Stage the planned Female rename + spelling fix</button><button id="exp" disabled>Download changed metadata (.json)</button>
 </div>
 <p class="note">Staged changes only exist in this browser tab until you export. Putting them on chain (uploading new files and pointing each NFT to them) is the next step and is not part of this page yet.</p>
 </section>
@@ -158,7 +174,7 @@ function pool(){var g=selGender();return liveIds().filter(function(a){return g==
 function opt(list,sel){return list.map(function(x){return '<option value="'+esc(x[0])+'"'+(x[0]===sel?" selected":"")+'>'+esc(x[1])+'</option>'}).join("")}
 
 function initEdit(){
-  $("#sEdit").classList.remove("hide");$("#sScan").classList.remove("hide");$("#sStaged").classList.remove("hide");
+  $("#sEdit").classList.remove("hide");$("#sScan").classList.remove("hide");$("#sChain").classList.remove("hide");$("#sStaged").classList.remove("hide");
   refreshGender();refreshTypes();refreshVals();setMode(1);renderStaged();
 }
 function refreshGender(){
@@ -215,14 +231,38 @@ function updatePreview(){
     var after=mode===1?esc(r.x.trait_type)+': <span class="new">'+esc(nv||"…")+'</span>':'<span class="new">'+esc(nv||"…")+'</span>: '+esc(r.x.value);
     return '<tr><td>'+esc(r.a.name)+'</td><td>'+before+'</td><td>'+after+'</td></tr>'}).join("")+'</table></details>':"";
 }
-$("#apply").onclick=function(){
-  var nv=$("#nval").value.trim(),m=matches(),t=$("#ttype").value,op={mode:mode,type:t,from:$("#cval").value,to:nv,gender:selGender(),prev:[]};
-  m.forEach(function(r){
-    var j=META[r.a.id];op.prev.push({id:r.a.id,idx:r.idx,type:j.attributes[r.idx].trait_type,value:j.attributes[r.idx].value,wasChanged:!!CHANGED[r.a.id]});
-    if(mode===1)j.attributes[r.idx].value=nv;else j.attributes[r.idx].trait_type=nv;
-    CHANGED[r.a.id]=true;
+function stageOp(md,t,from,nv,gender){
+  var op={mode:md,type:t,from:from,to:nv,gender:gender,prev:[],skipped:[]};
+  liveIds().forEach(function(a){
+    if(gender!=="*"){var v=gv(META[a.id],"Gender");if(gender==="__none"?v!==undefined:v!==gender)return}
+    var j=META[a.id];
+    if(md===2&&attrs(j).some(function(x){return x.trait_type===nv})&&attrs(j).some(function(x){return x.trait_type===t})){op.skipped.push(a.name);return}
+    attrs(j).forEach(function(x,idx){
+      if(x.trait_type!==t)return;
+      if(md===1&&String(x.value)!==from)return;
+      op.prev.push({id:a.id,idx:idx,type:x.trait_type,value:x.value,wasChanged:!!CHANGED[a.id]});
+      if(md===1)x.value=nv;else x.trait_type=nv;
+      CHANGED[a.id]=true;
+    });
   });
-  op.count=m.length;OPS.push(op);$("#nval").value="";
+  op.count=op.prev.length;OPS.push(op);return op;
+}
+$("#apply").onclick=function(){
+  stageOp(mode,$("#ttype").value,$("#cval").value,$("#nval").value.trim(),selGender());
+  $("#nval").value="";
+  refreshGender();refreshTypes();refreshVals();renderStaged();
+};
+var PLAN=[
+ [2,"Face Accesories","","Face Accessories","*"],
+ [1,"Body","Warm","Cream","Female"],[1,"Body","Tanned","Honey","Female"],[1,"Body","Metallic","Silver","Female"],[1,"Body","Mechanical","Robotic","Female"],
+ [1,"Face","Warm","Cream","Female"],[1,"Face","Tanned","Honey","Female"],[1,"Face","Metallic","Silver","Female"],
+ [1,"Eyes","Serious","Cold","Female"],[1,"Eyes","Closed","Serene","Female"],[1,"Eyes","Curious","Surprised","Female"],[1,"Eyes","Fiery","Flame","Female"],[1,"Eyes","Glowing","Luminous","Female"],
+ [1,"Mouth","Grin","Toothy Smile","Female"],[1,"Mouth","Concern","Worried","Female"],[1,"Mouth","Bubblegum","Bubble Pop","Female"],
+ [1,"Face Accessories","Orange Visor","Amber Visor","Female"],[1,"Face Accessories","Big Glasses","Oversized Glasses","Female"],[1,"Face Accessories","Plaster","Cute Plaster","Female"],[1,"Face Accessories","Kitsune Mask","Fox Mask","Female"],[1,"Face Accessories","Eye Patch","Love Eye Patch","Female"],[1,"Face Accessories","Mechanical Head","Robotic Head","Female"]
+];
+$("#plan").onclick=function(){
+  if(OPS.length&&!confirm("This adds the planned changes on top of what is already staged. Continue?"))return;
+  PLAN.forEach(function(r){stageOp(r[0],r[1],r[2],r[3],r[4])});
   refreshGender();refreshTypes();refreshVals();renderStaged();
 };
 $("#undo").onclick=function(){
@@ -253,14 +293,77 @@ $("#scan").onclick=function(){
 };
 function renderStaged(){
   var n=Object.keys(CHANGED).length;
-  $("#undo").disabled=!OPS.length;$("#exp").disabled=!n;
-  $("#stagedList").innerHTML=OPS.length?('<table><tr><th>#</th><th>Change</th><th>Gender</th><th>NFTs</th></tr>'+OPS.map(function(o,i){return '<tr><td>'+(i+1)+'</td><td>'+(o.mode===1?esc(o.type)+': '+esc(o.from)+' → '+esc(o.to):'Rename '+esc(o.type)+' → '+esc(o.to))+'</td><td>'+esc(o.gender==="*"?"All":o.gender==="__none"?"(none)":o.gender)+'</td><td>'+o.count+'</td></tr>'}).join("")+'</table><p><b>'+n+'</b> NFTs changed in total. Each NFT needs only one on-chain update, however many of its traits you changed.</p>'):'Nothing staged yet.';
+  $("#undo").disabled=!OPS.length;$("#exp").disabled=!n;if(window.chainRefresh)window.chainRefresh();
+  $("#stagedList").innerHTML=OPS.length?('<table><tr><th>#</th><th>Change</th><th>Gender</th><th>NFTs</th></tr>'+OPS.map(function(o,i){return '<tr><td>'+(i+1)+'</td><td>'+(o.mode===1?esc(o.type)+': '+esc(o.from)+' → '+esc(o.to):'Rename '+esc(o.type)+' → '+esc(o.to))+'</td><td>'+esc(o.gender==="*"?"All":o.gender==="__none"?"(none)":o.gender)+'</td><td>'+o.count+(o.skipped&&o.skipped.length?' <span class="warn">skipped '+o.skipped.length+' (already has both): '+esc(o.skipped.join(", "))+'</span>':"")+'</td></tr>'}).join("")+'</table><p><b>'+n+'</b> NFTs changed in total. Each NFT needs only one on-chain update, however many of its traits you changed.</p>'):'Nothing staged yet.';
 }
 $("#exp").onclick=function(){
   var out=A.filter(function(a){return CHANGED[a.id]}).map(function(a){return {mint:a.id,name:a.name,old_uri:a.uri,metadata:META[a.id],original:ORIG[a.id]}});
   var b=new Blob([JSON.stringify({collection:$("#col").value,exported:new Date().toISOString(),count:out.length,items:out},null,1)],{type:"application/json"});
   var u=URL.createObjectURL(b),l=document.createElement("a");l.href=u;l.download="tensei-metadata-changes.json";document.body.appendChild(l);l.click();l.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);
 };
+/* ---------- on chain ---------- */
+var WALLET="",DONE={},NEWURI={},busy=false;
+function rpcUrl(){return "https://mainnet.helius-rpc.com/?api-key="+encodeURIComponent(KEY)}
+function todo(){return A.filter(function(a){return CHANGED[a.id]&&!DONE[a.id]})}
+function authOf(){var s={};A.filter(function(a){return CHANGED[a.id]}).forEach(function(a){s[a.auth]=1});return Object.keys(s)}
+function clog(t){$("#clog").innerHTML=t}
+window.chainRefresh=function(){
+  var n=todo().length,txs=Math.ceil(n/6),fee=(txs*(5000+200)+0)/1e9;
+  $("#cstats").innerHTML='<div class="stat"><b>'+n+'</b>NFTs to update</div><div class="stat"><b>'+Object.keys(DONE).length+'</b>done</div><div class="stat"><b>~'+fee.toFixed(4)+'</b>SOL network fees (≈'+txs+' transactions)</div>';
+  var ok=!!WALLET&&!busy&&n>0&&authOf().every(function(x){return x===WALLET});
+  $("#runTest").disabled=!ok;$("#runAll").disabled=!ok||!Object.keys(DONE).length;$("#verify").disabled=!Object.keys(DONE).length||busy;
+  var w="";if(WALLET&&authOf().some(function(x){return x!==WALLET}))w='<div class="err">The connected wallet is not the update authority of the changed NFTs ('+esc(authOf().join(", "))+'). Switch wallet before continuing.</div>';
+  $("#wwarn").innerHTML=w;
+};
+function loadChain(){
+  return new Promise(function(res,rej){
+    if(window.TenseiChain)return res();
+    var sc=document.createElement("script");sc.src="admin-chain.js?v=1";sc.onload=res;sc.onerror=function(){rej(new Error("Could not load the wallet code"))};document.head.appendChild(sc);
+  });
+}
+$("#wconn").onclick=function(){
+  loadChain().then(function(){return window.TenseiChain.connect()}).then(function(addr){WALLET=addr;$("#waddr").textContent="Connected: "+addr;window.chainRefresh()}).catch(function(e){clog('<div class="err">'+esc(e.message)+'</div>')});
+};
+async function sameJson(uri,obj){
+  try{var r=await fetch(uri,{cache:"no-store"});if(!r.ok)return false;var j=await r.json();return JSON.stringify(j)===JSON.stringify(obj)}catch(e){return false}
+}
+async function run(list){
+  busy=true;window.chainRefresh();
+  var T=window.TenseiChain,up=T.makeUploader(rpcUrl()),i=0,bad=[];
+  clog("Uploading new metadata files…");$("#cprog").style.width="2%";
+  async function w(){while(i<list.length){var a=list[i++];
+    try{
+      if(!NEWURI[a.id]){var u=await T.uploadJson(up,META[a.id]);var okk=false;for(var k=0;k<6&&!okk;k++){okk=await sameJson(u,META[a.id]);if(!okk)await new Promise(function(r){setTimeout(r,1500)})}
+        if(!okk)throw new Error("uploaded file could not be read back");NEWURI[a.id]=u}
+    }catch(e){bad.push(a.name+": "+String(e.message||e))}
+    $("#cprog").style.width=(2+60*i/list.length)+"%";clog("Uploaded "+Math.min(i,list.length)+" / "+list.length)}}
+  await Promise.all(Array.from({length:5},w));
+  var ready=list.filter(function(a){return NEWURI[a.id]});
+  if(!ready.length){busy=false;window.chainRefresh();clog('<div class="err">No files were uploaded. '+esc(bad.slice(0,3).join(" | "))+'</div>');return}
+  clog("Files ready ("+ready.length+"). Approve the transactions in your wallet…");$("#cprog").style.width="65%";
+  var res=await T.sendUpdates(rpcUrl(),$("#col").value.trim(),ready.map(function(a){return {asset:a.id,uri:NEWURI[a.id]}}),{onProgress:function(r){$("#cprog").style.width=(65+35*(r.ok.length+r.fail.length)/ready.length)+"%";clog("Updated "+r.ok.length+" · failed "+r.fail.length+" of "+ready.length)}});
+  res.ok.forEach(function(id){DONE[id]=NEWURI[id]});
+  busy=false;$("#cprog").style.width="100%";window.chainRefresh();
+  clog("<b>Finished.</b> Updated "+res.ok.length+" NFTs."+(res.fail.length?' <div class="err">'+res.fail.length+' failed (they stay in the list, run again to retry): '+esc(res.fail.slice(0,3).map(function(f){return f.error}).join(" | "))+'</div>':"")+(bad.length?' <div class="warn">'+bad.length+' not uploaded: '+esc(bad.slice(0,3).join(" | "))+'</div>':"")+" Click Verify on chain to double-check.");
+}
+$("#runTest").onclick=function(){
+  var n=Math.max(1,Math.min(20,parseInt($("#ntest").value,10)||3)),list=todo().slice(0,n);
+  if(!confirm("Test on "+list.length+" NFTs ("+list.map(function(a){return a.name}).join(", ")+"). Your wallet will ask you to approve. Continue?"))return;
+  run(list);
+};
+$("#runAll").onclick=function(){
+  var list=todo();if(!confirm("Update the remaining "+list.length+" NFTs? Your wallet will ask for approval in batches."))return;
+  run(list);
+};
+$("#verify").onclick=async function(){
+  var ids=Object.keys(DONE),bad=0,nm=[];clog("Checking "+ids.length+" NFTs on chain…");
+  for(var i=0;i<ids.length;i++){
+    var r=await rpc("getAsset",{id:ids[i]});var a=r.result;
+    var okUri=a&&a.content&&a.content.json_uri===DONE[ids[i]];if(!okUri){bad++;nm.push(ids[i])}
+  }
+  clog(bad?'<div class="err">'+bad+' of '+ids.length+' do not show the new link yet (indexers can lag a minute; try again): '+esc(nm.slice(0,3).join(", "))+'</div>':'<b>All '+ids.length+' checked NFTs point to their new metadata.</b> Marketplaces may take a while to refresh.');
+};
+
 })();
 </script>
 </body>
