@@ -336,9 +336,9 @@ async function run(list){
   try{
     if(pending.length){
       var need=Math.ceil(pending.length*4000+Math.ceil(pending.length/40)*5000+20000);
-      var have=await T.tempBalance(rpcUrl());
-      if(have<need){
-        var send=need-have;
+      var have=await T.tempBalance(rpcUrl()),RENT=900000;
+      if(have<need+RENT){
+        var send=need+RENT-have;
         if(!confirm("Storing "+pending.length+" new files on Arweave costs about "+(pending.length*4000/1e9).toFixed(5)+" SOL.\n\nYour wallet will now send "+(send/1e9).toFixed(5)+" SOL to a temporary upload key that lives only in this browser tab ("+T.tempAddress(rpcUrl()).slice(0,6)+"…). Whatever is left is sent back to your wallet at the end.\n\nContinue?")){busy=false;window.chainRefresh();return}
         clog("Approve the small SOL transfer in your wallet…");
         await withTimeout(T.fundTemp(rpcUrl(),send),120000,"The funding transfer was not confirmed in time");
