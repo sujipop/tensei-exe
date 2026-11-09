@@ -345,7 +345,7 @@ window.chainRefresh=function(){
 function loadChain(){
   return new Promise(function(res,rej){
     if(window.TenseiChain)return res();
-    var sc=document.createElement("script");sc.src="admin-chain.js?v=10";sc.onload=res;sc.onerror=function(){rej(new Error("Could not load the wallet code"))};document.head.appendChild(sc);
+    var sc=document.createElement("script");sc.src="admin-chain.js?v=11";sc.onload=res;sc.onerror=function(){rej(new Error("Could not load the wallet code"))};document.head.appendChild(sc);
   });
 }
 $("#wconn").onclick=function(){
@@ -393,7 +393,15 @@ async function run(list){
   }catch(e){}
   if(!ready.length){busy=false;window.chainRefresh();clog('<div class="err">No files were uploaded. '+esc(bad.slice(0,3).join(" | "))+'</div>');return}
   clog("Files ready ("+ready.length+"). Approve the transactions in your wallet…");$("#cprog").style.width="65%";
-  var res=await T.sendUpdates(rpcUrl(),$("#col").value.trim(),ready.map(function(a){return {asset:a.id,uri:NEWURI[a.id]}}),{onProgress:function(r){$("#cprog").style.width=(65+35*(r.ok.length+r.fail.length)/ready.length)+"%";clog("Updated "+r.ok.length+" · failed "+r.fail.length+" of "+ready.length)}});
+  var res={ok:[],fail:[]},todoU=ready.map(function(a){return {asset:a.id,uri:NEWURI[a.id]}});
+  for(var attempt=0;attempt<3&&todoU.length;attempt++){
+    if(attempt)clog("Some transactions did not land in time (nothing changed on those). Approve again in your wallet (retry "+attempt+" of 2)…");
+    var r1=await T.sendUpdates(rpcUrl(),$("#col").value.trim(),todoU,{onProgress:function(r){$("#cprog").style.width=(65+35*(res.ok.length+r.ok.length)/ready.length)+"%";clog("Updated "+(res.ok.length+r.ok.length)+" of "+ready.length+(r.fail.length?" · "+r.fail.length+" to retry":""))}});
+    res.ok=res.ok.concat(r1.ok);res.fail=r1.fail;
+    if(r1.fail.some(function(f){return f.error==="not approved in wallet"}))break;
+    var failed={};r1.fail.forEach(function(f){failed[f.asset]=1});
+    todoU=todoU.filter(function(u){return failed[u.asset]});
+  }
   res.ok.forEach(function(id){DONE[id]=NEWURI[id]});
   var back="";try{var sent=await T.sweepTemp(rpcUrl(),WALLET);back=sent?" Returned "+(sent/1e9).toFixed(5)+" SOL of unused upload funds to your wallet.":""}catch(e){back=" (Could not return the leftover upload funds automatically; the amount is tiny.)"}
   busy=false;$("#cprog").style.width="100%";window.chainRefresh();

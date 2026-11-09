@@ -98,10 +98,19 @@ T.sendUpdates=async function(rpc,collection,updates,opt){
         if(still.length){
           var h=await rawRpc(rpc,"getBlockHeight",[{commitment:"confirmed"}]);
           if((h.result||0)>Number(bh.lastValidBlockHeight)+10){still.forEach(function(it){it.state="fail";it.err=(it.err?it.err+"; then ":"")+"expired before landing (nothing changed), sig "+it.sig});}
-          else{for(var q=0;q<still.length;q++){broadcast(still[q].raw);if(round%3===2)await rawRpc(rpc,"sendTransaction",[still[q].raw,{encoding:"base64",skipPreflight:true,maxRetries:0}]).catch(function(){});await new Promise(function(x){setTimeout(x,150)})}}
+          else{for(var q=0;q<still.length;q++){broadcast(still[q].raw);if(round%2===1)await rawRpc(rpc,"sendTransaction",[still[q].raw,{encoding:"base64",skipPreflight:true,maxRetries:0}]).catch(function(){});await new Promise(function(x){setTimeout(x,150)})}}
         }
       }catch(e){}
       log({ok:res.ok.concat([].concat.apply([],items.filter(function(it){return it.state==="ok"}).map(function(it){return it.g.map(function(u){return u.asset})}))),fail:res.fail});
+    }
+    /* for anything that did not land, ask the chain why (size, programs, simulation result) */
+    for(var d=0;d<items.length;d++){var it2=items[d];if(it2.state==="ok")continue;
+      try{var bytes=Uint8Array.from(atob(it2.raw),function(ch){return ch.charCodeAt(0)});
+        var msg=signed[d].message,progs=msg.instructions.map(function(ix){return String(msg.accounts[ix.programIndex]).slice(0,6)}).join(",");
+        var sim=await rawRpc(rpc,"simulateTransaction",[it2.raw,{encoding:"base64",sigVerify:true,replaceRecentBlockhash:false}]);
+        var sv=sim.result&&sim.result.value,last=sv&&sv.logs&&sv.logs.length?sv.logs[sv.logs.length-1]:"";
+        it2.err+=" [diag size "+bytes.length+" ix "+progs+" sim "+(sim.error?sim.error.message:JSON.stringify(sv&&sv.err))+" "+String(last).slice(0,120)+"]";
+      }catch(e){it2.err+=" [diag failed "+String(e.message||e).slice(0,80)+"]"}
     }
     items.forEach(function(it){
       if(it.state==="ok")it.g.forEach(function(u){res.ok.push(u.asset)});
