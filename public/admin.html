@@ -318,7 +318,7 @@ window.chainRefresh=function(){
 function loadChain(){
   return new Promise(function(res,rej){
     if(window.TenseiChain)return res();
-    var sc=document.createElement("script");sc.src="admin-chain.js?v=1";sc.onload=res;sc.onerror=function(){rej(new Error("Could not load the wallet code"))};document.head.appendChild(sc);
+    var sc=document.createElement("script");sc.src="admin-chain.js?v=2";sc.onload=res;sc.onerror=function(){rej(new Error("Could not load the wallet code"))};document.head.appendChild(sc);
   });
 }
 $("#wconn").onclick=function(){
