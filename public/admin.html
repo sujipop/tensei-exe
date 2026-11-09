@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>TENSEI.EXE Metadata Editor</title>
+<style>
+:root{--ink:#14081f;--pink:#ff6de0;--purple:#c66eff;--mint:#6effdb;--yellow:#ffe76e;--bg:#e6e7ec;--white:#fffaf0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,Segoe UI,Arial,sans-serif}
+header{background:var(--ink);color:var(--white);padding:14px 22px;display:flex;align-items:center;gap:14px;border-bottom:4px solid var(--pink)}
+header b{font-size:1.2rem;letter-spacing:.1em}header b i{font-style:normal;background:var(--pink);color:var(--ink);padding:0 6px;margin-left:2px}
+header span{opacity:.7;font-size:.85rem;letter-spacing:.14em;text-transform:uppercase}
+main{max-width:1200px;margin:0 auto;padding:22px}
+.card{background:var(--white);border:3px solid var(--ink);box-shadow:6px 6px 0 var(--purple);padding:18px;margin-bottom:22px}
+h2{margin:0 0 12px;font-size:1rem;letter-spacing:.14em;text-transform:uppercase}
+label{display:block;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;margin:10px 0 4px;font-weight:700}
+input,select{width:100%;padding:10px;border:2px solid var(--ink);background:#fff;font:inherit;color:var(--ink)}
+button{border:0;background:var(--ink);color:var(--yellow);padding:11px 16px;font:700 .85rem system-ui;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+button:hover:not(:disabled){background:var(--pink);color:var(--ink)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.alt{background:var(--mint);color:var(--ink)}button.alt:hover:not(:disabled){background:var(--yellow)}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;align-items:end}
+.stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.stat{background:var(--ink);color:var(--white);padding:8px 12px}.stat b{color:var(--mint);font-size:1.1rem;margin-right:6px}
+.bar{height:10px;background:#d4d5dc;margin-top:12px}.bar i{display:block;height:100%;width:0;background:var(--pink)}
+.note{font-size:.85rem;opacity:.8}.warn{background:var(--yellow);padding:8px 10px;margin:8px 0;font-size:.9rem}.err{background:var(--pink);padding:8px 10px;margin:8px 0}
+table{width:100%;border-collapse:collapse;font-size:.88rem}th,td{padding:6px 8px;border-bottom:1px solid #ccc;text-align:left;vertical-align:top}th{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
+.old{background:#ffd3f3;padding:0 4px}.new{background:var(--mint);padding:0 4px}
+.tabs button{margin-right:6px}.hide{display:none}
+details{margin-top:10px}summary{cursor:pointer;font-weight:700}
+code{background:#ececf2;padding:1px 5px}
+</style>
+</head>
+<body>
+<header><b>TENSEI<i>.EXE</i></b><span>Metadata editor · owner only · no chain changes in this version</span></header>
+<main>
+
+<section class="card" id="sLoad">
+<h2>1. Load collection</h2>
+<div class="row">
+ <div><label for="key">Helius API key (read only)</label><input id="key" type="password" autocomplete="off" placeholder="paste key, kept only in this tab"></div>
+ <div><label for="col">Collection address</label><input id="col" value="7bMrtPKbuXM1mg62bwxm4qePh7vESVuJeUWSjdV5Sb5h"></div>
+ <div><button id="load">Load collection</button></div>
+</div>
+<div class="bar"><i id="prog"></i></div>
+<div class="note" id="status">Not loaded yet. Loading reads every NFT and its trait file. Nothing is changed on chain.</div>
+<div class="stats" id="stats"></div>
+<div id="issues"></div>
+</section>
+
+<section class="card hide" id="sEdit">
+<h2>2. Bulk edit traits</h2>
+<div class="tabs"><button id="m1" class="alt">Change a trait value</button><button id="m2">Rename a trait type</button></div>
+<div class="row">
+ <div><label for="gender">Filter by Gender</label><select id="gender"></select></div>
+ <div><label for="ttype">Trait type</label><select id="ttype"></select></div>
+ <div id="cvWrap"><label for="cval">Current value</label><select id="cval"></select></div>
+ <div><label for="nval" id="nlab">New value</label><input id="nval" placeholder="e.g. Cream"></div>
+</div>
+<div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+ <button id="apply" disabled>Stage change</button><button id="undo" class="alt" disabled>Undo last</button>
+</div>
+<div class="note" id="matchInfo" style="margin-top:10px"></div>
+<div id="preview"></div>
+</section>
+
+<section class="card hide" id="sStaged">
+<h2>3. Staged changes</h2>
+<div id="stagedList" class="note">Nothing staged yet.</div>
+<div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+ <button id="exp" disabled>Download changed metadata (.json)</button>
+</div>
+<p class="note">Staged changes only exist in this browser tab until you export. Putting them on chain (uploading new files and pointing each NFT to them) is the next step and is not part of this page yet.</p>
+</section>
+</main>
+
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)};
+var A=[],META={},ORIG={},CHANGED={},OPS=[],mode=1;
+var esc=function(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+var KEY="";try{KEY=sessionStorage.getItem("hk")||""}catch(e){}
+if(KEY)$("#key").value=KEY;
+
+function status(t,pct){$("#status").textContent=t;if(pct!=null)$("#prog").style.width=pct+"%"}
+function rpc(method,params){
+  return fetch("https://mainnet.helius-rpc.com/?api-key="+encodeURIComponent(KEY),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:method,params:params})}).then(function(r){return r.json()});
+}
+function attrs(m){return (m&&Array.isArray(m.attributes))?m.attributes:[]}
+function gv(m,t){var a=attrs(m).filter(function(x){return x.trait_type===t})[0];return a?a.value:undefined}
+
+$("#load").onclick=function(){
+  KEY=$("#key").value.trim();if(!KEY){status("Paste your Helius key first.");return}
+  try{sessionStorage.setItem("hk",KEY)}catch(e){}
+  var col=$("#col").value.trim();$("#load").disabled=true;A=[];META={};ORIG={};CHANGED={};OPS=[];
+  status("Reading the collection list…",2);
+  var page=1;
+  (function next(){
+    rpc("getAssetsByGroup",{groupKey:"collection",groupValue:col,page:page,limit:1000}).then(function(r){
+      if(r.error){status("Helius error: "+r.error.message);$("#load").disabled=false;return}
+      r.result.items.forEach(function(a){A.push({id:a.id,name:(a.content&&a.content.metadata&&a.content.metadata.name)||"",uri:(a.content&&a.content.json_uri)||"",burnt:!!a.burnt,mutable:a.mutable,auth:(a.authorities||[])[0]&&a.authorities[0].address})});
+      if(r.result.items.length>=1000){page++;next()}else fetchAll();
+    }).catch(function(e){status("Could not reach Helius: "+e.message);$("#load").disabled=false});
+  })();
+};
+
+function fetchAll(){
+  var list=A.filter(function(a){return !a.burnt&&a.uri}),i=0,done=0,fail=[];
+  status("Reading trait files 0 / "+list.length,5);
+  function worker(){
+    if(i>=list.length)return Promise.resolve();
+    var a=list[i++];
+    return fetch(a.uri).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()}).then(function(j){META[a.id]=j;ORIG[a.id]=JSON.parse(JSON.stringify(j))}).catch(function(e){fail.push({a:a,e:String(e.message||e)})}).then(function(){done++;if(done%25===0||done===list.length)status("Reading trait files "+done+" / "+list.length,5+95*done/list.length)}).then(worker);
+  }
+  Promise.all(Array.from({length:16},worker)).then(function(){
+    A.forEach(function(a){a._fail=fail.some(function(f){return f.a===a})});
+    status("Loaded "+Object.keys(META).length+" NFTs.",100);
+    $("#load").disabled=false;report(fail);initEdit();
+  });
+}
+
+function hostOf(u){try{return new URL(u).host}catch(e){return "none"}}
+function report(fail){
+  var live=A.filter(function(a){return !a.burnt}),hosts={};
+  live.forEach(function(a){var h=hostOf(a.uri);hosts[h]=(hosts[h]||0)+1});
+  var notMut=live.filter(function(a){return a.mutable===false}).length;
+  var oddName=live.filter(function(a){return !/^TENSEI #\d+$/.test(a.name)});
+  var nameCnt={};live.forEach(function(a){nameCnt[a.name]=(nameCnt[a.name]||0)+1});
+  var dupNames=Object.keys(nameCnt).filter(function(k){return nameCnt[k]>1});
+  var noGender=live.filter(function(a){return META[a.id]&&gv(META[a.id],"Gender")===undefined});
+  var dupTypes=live.filter(function(a){var m=META[a.id];if(!m)return false;var s={};return attrs(m).some(function(x){if(s[x.trait_type])return true;s[x.trait_type]=1;return false})});
+  var types={};live.forEach(function(a){attrs(META[a.id]).forEach(function(x){types[x.trait_type]=(types[x.trait_type]||0)+1})});
+  var h='<div class="stats"></div>';
+  $("#stats").innerHTML='<div class="stat"><b>'+live.length+'</b>NFTs</div><div class="stat"><b>'+A.filter(function(a){return a.burnt}).length+'</b>burned</div>'+Object.keys(hosts).map(function(k){return '<div class="stat"><b>'+hosts[k]+'</b>'+esc(k)+'</div>'}).join("");
+  var out="";
+  if(fail.length)out+='<div class="err"><b>'+fail.length+' trait files could not be read</b> (they are left out of every edit): '+esc(fail.slice(0,8).map(function(f){return f.a.name}).join(", "))+(fail.length>8?" …":"")+'</div>';
+  if(notMut)out+='<div class="err">'+notMut+' NFTs are not mutable and cannot be updated.</div>';
+  if(oddName.length)out+='<div class="warn">'+oddName.length+' NFTs do not have a normal “TENSEI #number” name: '+esc(oddName.slice(0,8).map(function(a){return a.name||"(none)"}).join(", "))+(oddName.length>8?" …":"")+'</div>';
+  if(dupNames.length)out+='<div class="warn">Duplicate names: '+esc(dupNames.join(", "))+'</div>';
+  if(noGender.length)out+='<div class="warn">'+noGender.length+' NFTs have no Gender trait: '+esc(noGender.slice(0,8).map(function(a){return a.name}).join(", "))+(noGender.length>8?" …":"")+'</div>';
+  if(dupTypes.length)out+='<div class="warn">'+dupTypes.length+' NFTs list the same trait type twice.</div>';
+  out+='<details><summary>Trait types found ('+Object.keys(types).length+')</summary><table><tr><th>Trait type</th><th>NFTs</th></tr>'+Object.keys(types).sort().map(function(k){return '<tr><td>'+esc(k)+'</td><td>'+types[k]+'</td></tr>'}).join("")+'</table></details>';
+  $("#issues").innerHTML=out;
+}
+
+function liveIds(){return A.filter(function(a){return !a.burnt&&META[a.id]})}
+function selGender(){return $("#gender").value}
+function pool(){var g=selGender();return liveIds().filter(function(a){return g==="*"||gv(META[a.id],"Gender")===g})}
+function opt(list,sel){return list.map(function(x){return '<option value="'+esc(x[0])+'"'+(x[0]===sel?" selected":"")+'>'+esc(x[1])+'</option>'}).join("")}
+
+function initEdit(){
+  $("#sEdit").classList.remove("hide");$("#sStaged").classList.remove("hide");
+  refreshGender();refreshTypes();refreshVals();setMode(1);renderStaged();
+}
+function refreshGender(){
+  var c={};liveIds().forEach(function(a){var g=gv(META[a.id],"Gender");g=g===undefined?"(none)":g;c[g]=(c[g]||0)+1});
+  var cur=$("#gender").value||"*";
+  var l=[["*","All genders ("+liveIds().length+")"]].concat(Object.keys(c).sort().map(function(g){return [g==="(none)"?"__none":g,g+" ("+c[g]+")"]}));
+  $("#gender").innerHTML=opt(l,cur);
+}
+function refreshTypes(){
+  var p=pool(),c={};p.forEach(function(a){attrs(META[a.id]).forEach(function(x){c[x.trait_type]=(c[x.trait_type]||0)+1})});
+  var cur=$("#ttype").value;
+  $("#ttype").innerHTML=opt(Object.keys(c).sort().map(function(k){return [k,k+" ("+c[k]+")"]}),cur);
+}
+function refreshVals(){
+  var t=$("#ttype").value,p=pool(),c={};
+  p.forEach(function(a){attrs(META[a.id]).forEach(function(x){if(x.trait_type===t){c[x.value]=(c[x.value]||0)+1}})});
+  var cur=$("#cval").value;
+  $("#cval").innerHTML=opt(Object.keys(c).sort().map(function(k){return [k,k+" ("+c[k]+")"]}),cur);
+  updatePreview();
+}
+function setMode(m){
+  mode=m;$("#m1").className=m===1?"alt":"";$("#m2").className=m===2?"alt":"";
+  $("#cvWrap").style.display=m===1?"":"none";
+  $("#nlab").textContent=m===1?"New value":"New trait type name";
+  $("#nval").placeholder=m===1?"e.g. Cream":"e.g. Face Accessories";
+  updatePreview();
+}
+$("#m1").onclick=function(){setMode(1)};$("#m2").onclick=function(){setMode(2)};
+$("#gender").onchange=function(){refreshTypes();refreshVals()};
+$("#ttype").onchange=refreshVals;$("#cval").onchange=updatePreview;$("#nval").oninput=updatePreview;
+
+function genderMatch(a){var g=selGender();if(g==="*")return true;var v=gv(META[a.id],"Gender");return g==="__none"?v===undefined:v===g}
+function matches(){
+  var t=$("#ttype").value,cv=$("#cval").value,out=[];
+  liveIds().filter(genderMatch).forEach(function(a){
+    attrs(META[a.id]).forEach(function(x,idx){
+      if(x.trait_type!==t)return;
+      if(mode===1&&String(x.value)!==cv)return;
+      out.push({a:a,idx:idx,x:x});
+    });
+  });
+  return out;
+}
+function updatePreview(){
+  var nv=$("#nval").value.trim(),m=matches(),t=$("#ttype").value;
+  var same=mode===1?(nv===$("#cval").value):(nv===t);
+  var ok=m.length&&nv&&!same;
+  $("#apply").disabled=!ok;
+  var gl=selGender()==="*"?"all genders":($("#gender").selectedOptions[0]||{}).textContent;
+  var desc=mode===1?('<b>'+esc(t)+'</b>: “'+esc($("#cval").value)+'” → “'+esc(nv||"…")+'”'):('Trait type <b>'+esc(t)+'</b> → <b>'+esc(nv||"…")+'</b>');
+  $("#matchInfo").innerHTML=desc+' · '+esc(gl)+' · <b>'+m.length+'</b> NFTs will change'+(same&&nv?' <span class="warn">new value is the same as the current one</span>':"");
+  $("#preview").innerHTML=m.length?'<details open><summary>Preview (first 12)</summary><table><tr><th>NFT</th><th>Before</th><th>After</th></tr>'+m.slice(0,12).map(function(r){
+    var before=mode===1?esc(r.x.trait_type)+': <span class="old">'+esc(r.x.value)+'</span>':'<span class="old">'+esc(r.x.trait_type)+'</span>: '+esc(r.x.value);
+    var after=mode===1?esc(r.x.trait_type)+': <span class="new">'+esc(nv||"…")+'</span>':'<span class="new">'+esc(nv||"…")+'</span>: '+esc(r.x.value);
+    return '<tr><td>'+esc(r.a.name)+'</td><td>'+before+'</td><td>'+after+'</td></tr>'}).join("")+'</table></details>':"";
+}
+$("#apply").onclick=function(){
+  var nv=$("#nval").value.trim(),m=matches(),t=$("#ttype").value,op={mode:mode,type:t,from:$("#cval").value,to:nv,gender:selGender(),prev:[]};
+  m.forEach(function(r){
+    var j=META[r.a.id];op.prev.push({id:r.a.id,idx:r.idx,type:j.attributes[r.idx].trait_type,value:j.attributes[r.idx].value,wasChanged:!!CHANGED[r.a.id]});
+    if(mode===1)j.attributes[r.idx].value=nv;else j.attributes[r.idx].trait_type=nv;
+    CHANGED[r.a.id]=true;
+  });
+  op.count=m.length;OPS.push(op);$("#nval").value="";
+  refreshGender();refreshTypes();refreshVals();renderStaged();
+};
+$("#undo").onclick=function(){
+  var op=OPS.pop();if(!op)return;
+  op.prev.forEach(function(p){var j=META[p.id];j.attributes[p.idx].trait_type=p.type;j.attributes[p.idx].value=p.value;if(!p.wasChanged)delete CHANGED[p.id]});
+  refreshGender();refreshTypes();refreshVals();renderStaged();
+};
+function renderStaged(){
+  var n=Object.keys(CHANGED).length;
+  $("#undo").disabled=!OPS.length;$("#exp").disabled=!n;
+  $("#stagedList").innerHTML=OPS.length?('<table><tr><th>#</th><th>Change</th><th>Gender</th><th>NFTs</th></tr>'+OPS.map(function(o,i){return '<tr><td>'+(i+1)+'</td><td>'+(o.mode===1?esc(o.type)+': '+esc(o.from)+' → '+esc(o.to):'Rename '+esc(o.type)+' → '+esc(o.to))+'</td><td>'+esc(o.gender==="*"?"All":o.gender==="__none"?"(none)":o.gender)+'</td><td>'+o.count+'</td></tr>'}).join("")+'</table><p><b>'+n+'</b> NFTs changed in total.</p>'):'Nothing staged yet.';
+}
+$("#exp").onclick=function(){
+  var out=A.filter(function(a){return CHANGED[a.id]}).map(function(a){return {mint:a.id,name:a.name,old_uri:a.uri,metadata:META[a.id],original:ORIG[a.id]}});
+  var b=new Blob([JSON.stringify({collection:$("#col").value,exported:new Date().toISOString(),count:out.length,items:out},null,1)],{type:"application/json"});
+  var u=URL.createObjectURL(b),l=document.createElement("a");l.href=u;l.download="tensei-metadata-changes.json";document.body.appendChild(l);l.click();l.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);
+};
+})();
+</script>
+</body>
+</html>
