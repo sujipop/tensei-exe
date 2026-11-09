@@ -1,10 +1,11 @@
 import {createUmi} from '@metaplex-foundation/umi-bundle-defaults';
 import {mplCore, updateV1, updateCollectionV1} from '@metaplex-foundation/mpl-core';
+import {base58} from '@metaplex-foundation/umi/serializers';
 import {createNoopSigner, publicKey, generateSigner, signerIdentity, transactionBuilder, createGenericFile, lamports} from '@metaplex-foundation/umi';
 import {walletAdapterIdentity} from '@metaplex-foundation/umi-signer-wallet-adapters';
 import {irysUploader} from '@metaplex-foundation/umi-uploader-irys';
 import {toWeb3JsTransaction} from '@metaplex-foundation/umi-web3js-adapters';
-import {setComputeUnitPrice, transferSol} from '@metaplex-foundation/mpl-toolbox';
+import {setComputeUnitPrice, transferSol, createAccountWithRent} from '@metaplex-foundation/mpl-toolbox';
 
 function pickProvider(){
   var w=window;
@@ -81,14 +82,39 @@ T.sendUpdates=async function(rpc,collection,updates,opt){
 
 /* ---- move the collection's update authority (new wallet pays the fee, old wallet only co-signs) ---- */
 T.activeAddress=function(){return T.provider&&T.provider.publicKey?String(T.provider.publicKey):""};
+/* A durable nonce makes the transaction valid until it is used, so signing with two accounts can take as long as needed. */
+var SYSTEM="11111111111111111111111111111111",SYS_BH="SysvarRecentB1ockHashes11111111111111111111",SYS_RENT="SysvarRent111111111111111111111111111111111";
+function u32(n){var b=new Uint8Array(4);new DataView(b.buffer).setUint32(0,n,true);return b}
+T.nonce=null;
+T.createNonce=async function(rpc){
+  var umi=createUmi(rpc).use(mplCore()).use(walletAdapterIdentity(T.provider));
+  var nk=generateSigner(umi),auth=umi.identity.publicKey;
+  var init={programId:publicKey(SYSTEM),keys:[{pubkey:nk.publicKey,isSigner:false,isWritable:true},{pubkey:publicKey(SYS_BH),isSigner:false,isWritable:false},{pubkey:publicKey(SYS_RENT),isSigner:false,isWritable:false}],data:(function(){var d=new Uint8Array(36);d.set(u32(6),0);d.set(base58.serialize(String(auth)),4);return d})()};
+  var b=createAccountWithRent(umi,{newAccount:nk,payer:umi.identity,space:80,programId:publicKey(SYSTEM)}).add({instruction:init,signers:[],bytesCreatedOnChain:0});
+  await b.sendAndConfirm(umi,{confirm:{commitment:"confirmed"}});
+  T.nonce=String(nk.publicKey);return T.nonce;
+};
+async function readNonce(rpc,addr){
+  for(var i=0;i<10;i++){
+    var r=await rawRpc(rpc,"getAccountInfo",[addr,{encoding:"base64",commitment:"confirmed"}]);
+    var v=r.result&&r.result.value;
+    if(v){var bin=atob(v.data[0]),bytes=new Uint8Array(bin.length);for(var k=0;k<bin.length;k++)bytes[k]=bin.charCodeAt(k);if(bytes.length>=72&&bytes[4]===1)return base58.deserialize(bytes.slice(40,72))[0]}
+    await new Promise(function(x){setTimeout(x,1500)});
+  }
+  throw new Error("Could not read the nonce account yet. Try again in a moment.");
+}
 T.buildAuthorityTx=async function(rpc,collection,oldAddr,newAddr){
+  if(!T.nonce)throw new Error("Create the nonce account first");
   var umi=createUmi(rpc).use(mplCore());
   var nw=createNoopSigner(publicKey(newAddr)),od=createNoopSigner(publicKey(oldAddr));
   umi.use(signerIdentity(nw));
-  var bh=await umi.rpc.getLatestBlockhash({commitment:"confirmed"});
-  var b=updateCollectionV1(umi,{collection:publicKey(collection),payer:nw,authority:od,newUpdateAuthority:publicKey(newAddr)}).setFeePayer(nw).setBlockhash(bh);
+  var nonceVal=await readNonce(rpc,T.nonce);
+  var adv={programId:publicKey(SYSTEM),keys:[{pubkey:publicKey(T.nonce),isSigner:false,isWritable:true},{pubkey:publicKey(SYS_BH),isSigner:false,isWritable:false},{pubkey:publicKey(newAddr),isSigner:true,isWritable:false}],data:u32(4)};
+  var b=transactionBuilder().add({instruction:adv,signers:[nw],bytesCreatedOnChain:0})
+    .add(updateCollectionV1(umi,{collection:publicKey(collection),payer:nw,authority:od,newUpdateAuthority:publicKey(newAddr)}))
+    .setFeePayer(nw).setBlockhash({blockhash:nonceVal,lastValidBlockHeight:BigInt(Number.MAX_SAFE_INTEGER)});
   var tx=await b.build(umi);
-  T.authTx=toWeb3JsTransaction(tx);T.authBh=bh;
+  T.authTx=toWeb3JsTransaction(tx);
   return true;
 };
 T.signAuthTx=async function(){

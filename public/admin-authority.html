@@ -47,6 +47,7 @@ button:hover:not(:disabled){background:var(--pink);color:var(--ink)}button:disab
 
 <div class="card">
 <h2>Step 2 · Prepare and sign with the NEW wallet</h2>
+<p class="note">Preparing needs one small setup approval in Phantom (a temporary account of about 0.0015 SOL that makes the transaction valid until you send it). After that you can take your time.</p>
 <button id="b2" disabled>Prepare transaction</button><button id="b3" disabled>Sign with new wallet</button>
 <div id="sum"></div><div id="m2"></div>
 </div>
@@ -70,7 +71,7 @@ var $=function(s){return document.querySelector(s)};
 var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
 var NEW="",rpc=function(){return "https://mainnet.helius-rpc.com/?api-key="+encodeURIComponent($("#key").value.trim())};
 function msg(id,cls,t){$(id).innerHTML=t?'<div class="'+cls+'">'+t+'</div>':""}
-function load(){return new Promise(function(res,rej){if(window.TenseiChain)return res();var s=document.createElement("script");s.src="admin-chain.js?v=3";s.onload=res;s.onerror=function(){rej(new Error("Could not load wallet code"))};document.head.appendChild(s)})}
+function load(){return new Promise(function(res,rej){if(window.TenseiChain)return res();var s=document.createElement("script");s.src="admin-chain.js?v=4";s.onload=res;s.onerror=function(){rej(new Error("Could not load wallet code"))};document.head.appendChild(s)})}
 async function call(m,p){var r=await fetch(rpc(),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:m,params:p})});return r.json()}
 
 $("#b1").onclick=async function(){
@@ -87,7 +88,14 @@ $("#b1").onclick=async function(){
 };
 $("#b2").onclick=async function(){
   try{
-    await window.TenseiChain.buildAuthorityTx(rpc(),$("#col").value.trim(),$("#old").value.trim(),NEW);
+    var T=window.TenseiChain;
+    if(!T.nonce){
+      if(window.TenseiChain.activeAddress()!==NEW)throw new Error("Phantom is on a different account. Switch to the new account.");
+      msg("#m2","warn","Approve the small setup transaction in Phantom (it creates a temporary account of about 0.0015 SOL so you can take your time signing)…");
+      await T.createNonce(rpc());
+    }
+    msg("#m2","warn","Building the transaction…");
+    await T.buildAuthorityTx(rpc(),$("#col").value.trim(),$("#old").value.trim(),NEW);
     $("#sum").innerHTML='<p>Collection <span class="addr">'+esc($("#col").value.trim())+'</span>Authority will move from<span class="addr">'+esc($("#old").value.trim())+'</span>to (your new wallet, also paying the fee)<span class="addr">'+esc(NEW)+'</span></p><div class="warn">Check the last address carefully: it must be your new wallet. Then sign.</div>';
     $("#b3").disabled=false;msg("#m2","","");
   }catch(e){msg("#m2","err",esc(e.message))}
