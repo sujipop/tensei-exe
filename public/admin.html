@@ -320,7 +320,7 @@ window.chainRefresh=function(){
 function loadChain(){
   return new Promise(function(res,rej){
     if(window.TenseiChain)return res();
-    var sc=document.createElement("script");sc.src="admin-chain.js?v=6";sc.onload=res;sc.onerror=function(){rej(new Error("Could not load the wallet code"))};document.head.appendChild(sc);
+    var sc=document.createElement("script");sc.src="admin-chain.js?v=7";sc.onload=res;sc.onerror=function(){rej(new Error("Could not load the wallet code"))};document.head.appendChild(sc);
   });
 }
 $("#wconn").onclick=function(){
@@ -354,7 +354,7 @@ async function run(list){
           clog("Uploaded. Waiting for the files to become readable (can take 1-2 minutes)…");
           await Promise.all(chunk.map(async function(a){
             var okk=false;for(var t=0;t<45&&!okk;t++){okk=await sameJson(PENDVER[a.id],META[a.id]);if(!okk)await new Promise(function(r){setTimeout(r,3000)})}
-            if(okk)NEWURI[a.id]=PENDVER[a.id];else bad.push(a.name+": uploaded but not readable yet ("+PENDVER[a.id]+"). Click run again to re-check; you will not pay again.")}));
+            if(okk)NEWURI[a.id]=PENDVER[a.id];else bad.push(a.name+": the uploaded file could not be confirmed ("+PENDVER[a.id]+"). Nothing was changed on this NFT; click run again.")}));
         }catch(e){chunk.forEach(function(a){bad.push(a.name+": "+String(e.message||e))})}
         $("#cprog").style.width=(2+60*Math.min(i+chunk.length,pending.length)/pending.length)+"%";
       }

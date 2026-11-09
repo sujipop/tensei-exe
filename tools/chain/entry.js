@@ -47,7 +47,8 @@ T.sweepTemp=async function(rpc,toAddress){
 };
 T.uploadMany=async function(umi,objs){
   var files=objs.map(function(o,i){return createGenericFile(new TextEncoder().encode(JSON.stringify(o)),"metadata"+i+".json",{contentType:"application/json"})});
-  var uris=await umi.uploader.upload(files);
+  /* one file per upload call: a multi-file upload can return the links in a different order than the files */
+  var uris=await Promise.all(files.map(function(f){return umi.uploader.upload([f]).then(function(u){return u[0]})}));
   return uris.map(function(u){return "https://gateway.irys.xyz/"+String(u).split("/").pop()});
 };
 /* Sends Core "update uri" instructions: 6 per transaction, one wallet approval per batch of transactions. */
