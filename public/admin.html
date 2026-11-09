@@ -66,6 +66,13 @@ code{background:#ececf2;padding:1px 5px}
 <div id="preview"></div>
 </section>
 
+<section class="card hide" id="sScan">
+<h2>Compare Male and Female values</h2>
+<p class="note">Shows which value names are used by both genders, and names that look like spelling or wording variants of each other (including trailing spaces). Counts are Female / Male.</p>
+<button id="scan">Scan Body, Face, Eyes, Mouth, Hand, Hair, Face Accessories</button>
+<div id="scanOut"></div>
+</section>
+
 <section class="card hide" id="sStaged">
 <h2>3. Staged changes</h2>
 <div id="stagedList" class="note">Nothing staged yet.</div>
@@ -151,7 +158,7 @@ function pool(){var g=selGender();return liveIds().filter(function(a){return g==
 function opt(list,sel){return list.map(function(x){return '<option value="'+esc(x[0])+'"'+(x[0]===sel?" selected":"")+'>'+esc(x[1])+'</option>'}).join("")}
 
 function initEdit(){
-  $("#sEdit").classList.remove("hide");$("#sStaged").classList.remove("hide");
+  $("#sEdit").classList.remove("hide");$("#sScan").classList.remove("hide");$("#sStaged").classList.remove("hide");
   refreshGender();refreshTypes();refreshVals();setMode(1);renderStaged();
 }
 function refreshGender(){
@@ -223,10 +230,31 @@ $("#undo").onclick=function(){
   op.prev.forEach(function(p){var j=META[p.id];j.attributes[p.idx].trait_type=p.type;j.attributes[p.idx].value=p.value;if(!p.wasChanged)delete CHANGED[p.id]});
   refreshGender();refreshTypes();refreshVals();renderStaged();
 };
+
+function lev(a,b){var d=[],i,j;for(i=0;i<=a.length;i++){d[i]=[i]}for(j=1;j<=b.length;j++)d[0][j]=j;for(i=1;i<=a.length;i++)for(j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[a.length][b.length]}
+$("#scan").onclick=function(){
+  var T=["Body","Face","Eyes","Mouth","Hand","Hair","Face Accessories"],out="";
+  var canon=function(t){return t==="Face Accesories"?"Face Accessories":t};
+  var key=function(x){return String(x).toLowerCase().replace(/[^a-z0-9]/g,"")};
+  T.forEach(function(t){
+    var f={},m={};
+    liveIds().forEach(function(a){var g=gv(META[a.id],"Gender"),d=g==="Female"?f:m;attrs(META[a.id]).forEach(function(x){if(canon(x.trait_type)===t)d[x.value]=(d[x.value]||0)+1})});
+    var vals=Object.keys(f).concat(Object.keys(m)).filter(function(v,i,arr){return arr.indexOf(v)===i});
+    var both=vals.filter(function(v){return f[v]&&m[v]}).sort();
+    var near=[];
+    for(var i=0;i<vals.length;i++)for(var k=i+1;k<vals.length;k++){var a=vals[i],b=vals[k];
+      if(key(a)===key(b)||(Math.min(a.length,b.length)>4&&lev(a.toLowerCase().trim(),b.toLowerCase().trim())<=2))near.push([a,b])}
+    var c=function(v){return "“"+esc(v)+"” "+(f[v]||0)+"F / "+(m[v]||0)+"M"};
+    out+='<details open><summary>'+esc(t)+' · '+Object.keys(f).length+' Female values, '+Object.keys(m).length+' Male values, '+both.length+' shared</summary>'+
+      '<p><b>Used by both:</b> '+(both.length?both.map(c).join(" · "):"none")+'</p>'+
+      '<p><b>Possible variants:</b> '+(near.length?near.map(function(p){return c(p[0])+" ≈ "+c(p[1])}).join("<br>"):"none found")+'</p></details>';
+  });
+  $("#scanOut").innerHTML=out;
+};
 function renderStaged(){
   var n=Object.keys(CHANGED).length;
   $("#undo").disabled=!OPS.length;$("#exp").disabled=!n;
-  $("#stagedList").innerHTML=OPS.length?('<table><tr><th>#</th><th>Change</th><th>Gender</th><th>NFTs</th></tr>'+OPS.map(function(o,i){return '<tr><td>'+(i+1)+'</td><td>'+(o.mode===1?esc(o.type)+': '+esc(o.from)+' → '+esc(o.to):'Rename '+esc(o.type)+' → '+esc(o.to))+'</td><td>'+esc(o.gender==="*"?"All":o.gender==="__none"?"(none)":o.gender)+'</td><td>'+o.count+'</td></tr>'}).join("")+'</table><p><b>'+n+'</b> NFTs changed in total.</p>'):'Nothing staged yet.';
+  $("#stagedList").innerHTML=OPS.length?('<table><tr><th>#</th><th>Change</th><th>Gender</th><th>NFTs</th></tr>'+OPS.map(function(o,i){return '<tr><td>'+(i+1)+'</td><td>'+(o.mode===1?esc(o.type)+': '+esc(o.from)+' → '+esc(o.to):'Rename '+esc(o.type)+' → '+esc(o.to))+'</td><td>'+esc(o.gender==="*"?"All":o.gender==="__none"?"(none)":o.gender)+'</td><td>'+o.count+'</td></tr>'}).join("")+'</table><p><b>'+n+'</b> NFTs changed in total. Each NFT needs only one on-chain update, however many of its traits you changed.</p>'):'Nothing staged yet.';
 }
 $("#exp").onclick=function(){
   var out=A.filter(function(a){return CHANGED[a.id]}).map(function(a){return {mint:a.id,name:a.name,old_uri:a.uri,metadata:META[a.id],original:ORIG[a.id]}});
