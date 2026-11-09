@@ -93,7 +93,7 @@ code{background:#ececf2;padding:1px 5px}
 <h2>3. Staged changes</h2>
 <div id="stagedList" class="note">Nothing staged yet.</div>
 <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
- <button id="plan" class="alt">Stage the planned Female rename + spelling fix</button><button id="exp" disabled>Download changed metadata (.json)</button>
+ <button id="plan" class="alt">Stage the planned Female rename + spelling fix</button><button id="rmFA" class="alt">Remove the misspelt “Face Accesories” trait</button><button id="exp" disabled>Download changed metadata (.json)</button>
 </div>
 <p class="note">Staged changes only exist in this browser tab until you export. Putting them on chain (uploading new files and pointing each NFT to them) is the next step and is not part of this page yet.</p>
 </section>
@@ -252,6 +252,11 @@ function stageOp(md,t,from,nv,gender){
   liveIds().forEach(function(a){
     if(gender!=="*"){var v=gv(META[a.id],"Gender");if(gender==="__none"?v!==undefined:v!==gender)return}
     var j=META[a.id];
+    if(md===3){
+      if(!attrs(j).some(function(x){return x.trait_type===t}))return;
+      op.prev.push({id:a.id,remove:true,attrs:j.attributes.map(function(x){return Object.assign({},x)}),wasChanged:!!CHANGED[a.id]});
+      j.attributes=j.attributes.filter(function(x){return x.trait_type!==t});CHANGED[a.id]=true;return;
+    }
     if(md===2&&attrs(j).some(function(x){return x.trait_type===nv})&&attrs(j).some(function(x){return x.trait_type===t})){op.skipped.push(a.name);return}
     attrs(j).forEach(function(x,idx){
       if(x.trait_type!==t)return;
@@ -281,9 +286,14 @@ $("#plan").onclick=function(){
   PLAN.forEach(function(r){stageOp(r[0],r[1],r[2],r[3],r[4])});
   refreshGender();refreshTypes();refreshVals();renderStaged();
 };
+$("#rmFA").onclick=function(){
+  var op=stageOp(3,"Face Accesories","","","*");
+  refreshGender();refreshTypes();refreshVals();renderStaged();
+  if(!op.count)alert("No NFT has the trait “Face Accesories” any more.");
+};
 $("#undo").onclick=function(){
   var op=OPS.pop();if(!op)return;
-  op.prev.forEach(function(p){var j=META[p.id];j.attributes[p.idx].trait_type=p.type;j.attributes[p.idx].value=p.value;if(!p.wasChanged)delete CHANGED[p.id]});
+  op.prev.slice().reverse().forEach(function(p){var j=META[p.id];if(p.remove){j.attributes=p.attrs;if(!p.wasChanged)delete CHANGED[p.id];return}j.attributes[p.idx].trait_type=p.type;j.attributes[p.idx].value=p.value;if(!p.wasChanged)delete CHANGED[p.id]});
   refreshGender();refreshTypes();refreshVals();renderStaged();
 };
 
@@ -310,7 +320,7 @@ $("#scan").onclick=function(){
 function renderStaged(){
   var n=Object.keys(CHANGED).length;
   $("#undo").disabled=!OPS.length;$("#exp").disabled=!n;if(window.chainRefresh)window.chainRefresh();
-  $("#stagedList").innerHTML=OPS.length?('<table><tr><th>#</th><th>Change</th><th>Gender</th><th>NFTs</th></tr>'+OPS.map(function(o,i){return '<tr><td>'+(i+1)+'</td><td>'+(o.mode===1?esc(o.type)+': '+esc(o.from)+' → '+esc(o.to):'Rename '+esc(o.type)+' → '+esc(o.to))+'</td><td>'+esc(o.gender==="*"?"All":o.gender==="__none"?"(none)":o.gender)+'</td><td>'+o.count+(o.skipped&&o.skipped.length?' <span class="warn">skipped '+o.skipped.length+' (already has both): '+esc(o.skipped.join(", "))+'</span>':"")+'</td></tr>'}).join("")+'</table><p><b>'+n+'</b> NFTs changed in total. Each NFT needs only one on-chain update, however many of its traits you changed.</p>'):'Nothing staged yet.';
+  $("#stagedList").innerHTML=OPS.length?('<table><tr><th>#</th><th>Change</th><th>Gender</th><th>NFTs</th></tr>'+OPS.map(function(o,i){return '<tr><td>'+(i+1)+'</td><td>'+(o.mode===1?esc(o.type)+': '+esc(o.from)+' → '+esc(o.to):o.mode===3?'Remove the trait '+esc(o.type):'Rename '+esc(o.type)+' → '+esc(o.to))+'</td><td>'+esc(o.gender==="*"?"All":o.gender==="__none"?"(none)":o.gender)+'</td><td>'+o.count+(o.skipped&&o.skipped.length?' <span class="warn">skipped '+o.skipped.length+' (already has both): '+esc(o.skipped.join(", "))+'</span>':"")+'</td></tr>'}).join("")+'</table><p><b>'+n+'</b> NFTs changed in total. Each NFT needs only one on-chain update, however many of its traits you changed.</p>'):'Nothing staged yet.';
 }
 $("#exp").onclick=function(){
   var out=A.filter(function(a){return CHANGED[a.id]}).map(function(a){return {mint:a.id,name:a.name,old_uri:a.uri,metadata:META[a.id],original:ORIG[a.id]}});
