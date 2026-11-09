@@ -73,7 +73,13 @@ T.sendUpdates=async function(rpc,collection,updates,opt){
         var c=await umi.rpc.confirmTransaction(sig,{strategy:{type:"blockhash",...bh},commitment:"confirmed"});
         if(c.value&&c.value.err)throw new Error(JSON.stringify(c.value.err));
         g.forEach(function(u){res.ok.push(u.asset)});
-      }catch(e){g.forEach(function(u){res.fail.push({asset:u.asset,error:String(e.message||e)})})}
+      }catch(e){
+        var landed=false;
+        try{var st=await rawRpc(rpc,"getSignatureStatuses",[[base58.deserialize(tx.signatures[0])[0]],{searchTransactionHistory:true}]);
+          var v=st.result&&st.result.value&&st.result.value[0];landed=!!(v&&!v.err&&(v.confirmationStatus==="confirmed"||v.confirmationStatus==="finalized"))}catch(_){}
+        if(landed)g.forEach(function(u){res.ok.push(u.asset)});
+        else g.forEach(function(u){res.fail.push({asset:u.asset,error:/expired|block height/i.test(String(e.message||e))?"the approval took too long and the transaction expired (nothing was changed). Click again and approve in Phantom within about 30 seconds.":String(e.message||e)})});
+      }
       log(res);
     }));
   }
