@@ -5,7 +5,7 @@ import {createNoopSigner, publicKey, generateSigner, signerIdentity, transaction
 import {walletAdapterIdentity} from '@metaplex-foundation/umi-signer-wallet-adapters';
 import {irysUploader} from '@metaplex-foundation/umi-uploader-irys';
 import {toWeb3JsTransaction} from '@metaplex-foundation/umi-web3js-adapters';
-import {setComputeUnitPrice, transferSol, createAccountWithRent} from '@metaplex-foundation/mpl-toolbox';
+import {setComputeUnitPrice, setComputeUnitLimit, transferSol, createAccountWithRent} from '@metaplex-foundation/mpl-toolbox';
 
 function pickProvider(){
   var w=window;
@@ -48,12 +48,16 @@ T.sweepTemp=async function(rpc,toAddress){
 T.uploadMany=async function(umi,objs){
   var files=objs.map(function(o,i){return createGenericFile(new TextEncoder().encode(JSON.stringify(o)),"metadata"+i+".json",{contentType:"application/json"})});
   /* one file per upload call: a multi-file upload can return the links in a different order than the files */
-  var uris=await Promise.all(files.map(function(f){return umi.uploader.upload([f]).then(function(u){return u[0]})}));
+  /* at most 3 at a time, waiting and retrying when the storage service says "Too Many Requests" */
+  var uris=new Array(files.length),next=0;
+  async function one(f){for(var i=0;;i++){try{return (await umi.uploader.upload([f]))[0]}catch(e){if(i>=8||!/429|too many|rate|timeout|network|fetch/i.test(String(e.message||e)))throw e;await new Promise(function(x){setTimeout(x,1500*Math.pow(1.7,i)+Math.random()*500)})}}}
+  async function worker(){while(next<files.length){var k=next++;uris[k]=await one(files[k])}}
+  await Promise.all([worker(),worker(),worker()]);
   return uris.map(function(u){return "https://gateway.irys.xyz/"+String(u).split("/").pop()});
 };
 /* Sends Core "update uri" instructions: 6 per transaction, one wallet approval per batch of transactions. */
 T.sendUpdates=async function(rpc,collection,updates,opt){
-  opt=opt||{};var per=opt.perTx||6,batch=opt.txPerApproval||20,prio=opt.priority||1000,log=opt.onProgress||function(){};
+  opt=opt||{};var per=opt.perTx||6,batch=opt.txPerApproval||20,prio=opt.priority||50000,log=opt.onProgress||function(){};
   var umi=createUmi(rpc).use(mplCore()).use(walletAdapterIdentity(T.provider));
   var groups=[];for(var i=0;i<updates.length;i+=per)groups.push(updates.slice(i,i+per));
   var res={ok:[],fail:[]};
@@ -63,7 +67,7 @@ T.sendUpdates=async function(rpc,collection,updates,opt){
     if(!lb.result)throw new Error("Could not get a recent blockhash");
     var bh={blockhash:lb.result.value.blockhash,lastValidBlockHeight:lb.result.value.lastValidBlockHeight};
     var txs=part.map(function(g){
-      var b=transactionBuilder().add(setComputeUnitPrice(umi,{microLamports:prio}));
+      var b=transactionBuilder().add(setComputeUnitLimit(umi,{units:400000})).add(setComputeUnitPrice(umi,{microLamports:prio}));
       g.forEach(function(u){b=b.add(updateV1(umi,{asset:publicKey(u.asset),collection:publicKey(collection),newUri:u.uri}))});
       return b.setBlockhash(bh).build(umi);
     });

@@ -325,7 +325,7 @@ var COLAUTH="";
 function authOf(){return COLAUTH?[COLAUTH]:[]}
 function clog(t){$("#clog").innerHTML=t}
 window.chainRefresh=function(){
-  var n=todo().length,txs=Math.ceil(n/6),fee=(txs*(5000+200)+0)/1e9;
+  var n=todo().length,txs=Math.ceil(n/6),fee=(txs*25000)/1e9;
   $("#cstats").innerHTML='<div class="stat"><b>'+n+'</b>NFTs to update</div><div class="stat"><b>'+Object.keys(DONE).length+'</b>done</div><div class="stat"><b>~'+fee.toFixed(4)+'</b>SOL network fees (≈'+txs+' transactions)</div>';
   var ok=!!WALLET&&!busy&&n>0&&authOf().every(function(x){return x===WALLET});
   $("#runTest").disabled=!ok;$("#runAll").disabled=!ok;$("#verify").disabled=!Object.keys(DONE).length||busy;
@@ -335,7 +335,7 @@ window.chainRefresh=function(){
 function loadChain(){
   return new Promise(function(res,rej){
     if(window.TenseiChain)return res();
-    var sc=document.createElement("script");sc.src="admin-chain.js?v=8";sc.onload=res;sc.onerror=function(){rej(new Error("Could not load the wallet code"))};document.head.appendChild(sc);
+    var sc=document.createElement("script");sc.src="admin-chain.js?v=9";sc.onload=res;sc.onerror=function(){rej(new Error("Could not load the wallet code"))};document.head.appendChild(sc);
   });
 }
 $("#wconn").onclick=function(){
@@ -365,7 +365,7 @@ async function run(list){
         clog("Uploading files "+Math.min(i+chunk.length,pending.length)+" / "+pending.length+"…");
         try{
           var fresh=chunk.filter(function(a){return !PENDVER[a.id]});
-          if(fresh.length){var uu=await withTimeout(T.uploadMany(up,fresh.map(function(a){return META[a.id]})),180000,"upload timed out");fresh.forEach(function(a,k){PENDVER[a.id]=uu[k]})}
+          if(fresh.length){var uu=await withTimeout(T.uploadMany(up,fresh.map(function(a){return META[a.id]})),420000,"upload timed out");fresh.forEach(function(a,k){PENDVER[a.id]=uu[k]})}
           clog("Uploaded. Waiting for the files to become readable (can take 1-2 minutes)…");
           await Promise.all(chunk.map(async function(a){
             var okk=false;for(var t=0;t<45&&!okk;t++){okk=await sameJson(PENDVER[a.id],META[a.id]);if(!okk)await new Promise(function(r){setTimeout(r,3000)})}
