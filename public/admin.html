@@ -330,6 +330,7 @@ async function sameJson(uri,obj){
   try{var r=await fetch(uri,{cache:"no-store"});if(!r.ok)return false;var j=await r.json();return JSON.stringify(j)===JSON.stringify(obj)}catch(e){return false}
 }
 function withTimeout(p,ms,msg){return Promise.race([p,new Promise(function(_,j){setTimeout(function(){j(new Error(msg))},ms)})])}
+var PENDVER={};
 async function run(list){
   busy=true;window.chainRefresh();
   var T=window.TenseiChain,bad=[],pending=list.filter(function(a){return !NEWURI[a.id]});
@@ -348,10 +349,12 @@ async function run(list){
         var chunk=pending.slice(i,i+40);
         clog("Uploading files "+Math.min(i+chunk.length,pending.length)+" / "+pending.length+"…");
         try{
-          var uris=await withTimeout(T.uploadMany(up,chunk.map(function(a){return META[a.id]})),180000,"upload timed out");
-          for(var k=0;k<chunk.length;k++){
-            var okk=false;for(var t=0;t<6&&!okk;t++){okk=await sameJson(uris[k],META[chunk[k].id]);if(!okk)await new Promise(function(r){setTimeout(r,1500)})}
-            if(okk)NEWURI[chunk[k].id]=uris[k];else bad.push(chunk[k].name+": file could not be read back")}
+          var fresh=chunk.filter(function(a){return !PENDVER[a.id]});
+          if(fresh.length){var uu=await withTimeout(T.uploadMany(up,fresh.map(function(a){return META[a.id]})),180000,"upload timed out");fresh.forEach(function(a,k){PENDVER[a.id]=uu[k]})}
+          clog("Uploaded. Waiting for the files to become readable (can take 1-2 minutes)…");
+          await Promise.all(chunk.map(async function(a){
+            var okk=false;for(var t=0;t<45&&!okk;t++){okk=await sameJson(PENDVER[a.id],META[a.id]);if(!okk)await new Promise(function(r){setTimeout(r,3000)})}
+            if(okk)NEWURI[a.id]=PENDVER[a.id];else bad.push(a.name+": uploaded but not readable yet ("+PENDVER[a.id]+"). Click run again to re-check; you will not pay again.")}));
         }catch(e){chunk.forEach(function(a){bad.push(a.name+": "+String(e.message||e))})}
         $("#cprog").style.width=(2+60*Math.min(i+chunk.length,pending.length)/pending.length)+"%";
       }
