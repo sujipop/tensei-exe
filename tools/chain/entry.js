@@ -69,16 +69,24 @@ T.sendUpdates=async function(rpc,collection,updates,opt){
     await Promise.all(signed.map(async function(tx,k){
       var g=part[k];
       try{
-        var sig=await umi.rpc.sendTransaction(tx,{commitment:"confirmed",maxRetries:5});
-        var c=await umi.rpc.confirmTransaction(sig,{strategy:{type:"blockhash",...bh},commitment:"confirmed"});
-        if(c.value&&c.value.err)throw new Error(JSON.stringify(c.value.err));
+        var sig=await umi.rpc.sendTransaction(tx,{commitment:"confirmed",maxRetries:5,skipPreflight:false});
+        var sigStr=base58.deserialize(sig)[0],raw=btoa(String.fromCharCode.apply(null,umi.transactions.serialize(tx))),c=null,hh=0;
+        for(var n=0;n<60&&!c;n++){
+          var st=await rawRpc(rpc,"getSignatureStatuses",[[sigStr]]),v=st.result&&st.result.value&&st.result.value[0];
+          if(v){if(v.err)throw new Error(JSON.stringify(v.err));if(v.confirmationStatus==="confirmed"||v.confirmationStatus==="finalized"){c=true;break}}
+          var h=await rawRpc(rpc,"getBlockHeight",[{commitment:"confirmed"}]);hh=h.result||0;
+          if(hh>Number(bh.lastValidBlockHeight)+5)throw new Error("expired: block height "+hh+" passed "+bh.lastValidBlockHeight+" sig "+sigStr);
+          if(n%2===0)await rawRpc(rpc,"sendTransaction",[raw,{encoding:"base64",skipPreflight:true,maxRetries:0}]);
+          await new Promise(function(x){setTimeout(x,1500)});
+        }
+        if(!c)throw new Error("timed out waiting for confirmation, sig "+sigStr);
         g.forEach(function(u){res.ok.push(u.asset)});
       }catch(e){
         var landed=false;
         try{var st=await rawRpc(rpc,"getSignatureStatuses",[[base58.deserialize(tx.signatures[0])[0]],{searchTransactionHistory:true}]);
           var v=st.result&&st.result.value&&st.result.value[0];landed=!!(v&&!v.err&&(v.confirmationStatus==="confirmed"||v.confirmationStatus==="finalized"))}catch(_){}
         if(landed)g.forEach(function(u){res.ok.push(u.asset)});
-        else g.forEach(function(u){res.fail.push({asset:u.asset,error:/expired|block height/i.test(String(e.message||e))?"the approval took too long and the transaction expired (nothing was changed). Click again and approve in Phantom within about 30 seconds.":String(e.message||e)})});
+        else g.forEach(function(u){res.fail.push({asset:u.asset,error:String(e.message||e)})});
       }
       log(res);
     }));

@@ -71,7 +71,7 @@ var $=function(s){return document.querySelector(s)};
 var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
 var NEW="",rpc=function(){return "https://mainnet.helius-rpc.com/?api-key="+encodeURIComponent($("#key").value.trim())};
 function msg(id,cls,t){$(id).innerHTML=t?'<div class="'+cls+'">'+t+'</div>':""}
-function load(){return new Promise(function(res,rej){if(window.TenseiChain)return res();var s=document.createElement("script");s.src="admin-chain.js?v=5";s.onload=res;s.onerror=function(){rej(new Error("Could not load wallet code"))};document.head.appendChild(s)})}
+function load(){return new Promise(function(res,rej){if(window.TenseiChain)return res();var s=document.createElement("script");s.src="admin-chain.js?v=6";s.onload=res;s.onerror=function(){rej(new Error("Could not load wallet code"))};document.head.appendChild(s)})}
 async function call(m,p){var r=await fetch(rpc(),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:m,params:p})});return r.json()}
 
 $("#b1").onclick=async function(){
