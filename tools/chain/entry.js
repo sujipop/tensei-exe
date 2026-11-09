@@ -1,8 +1,9 @@
 import {createUmi} from '@metaplex-foundation/umi-bundle-defaults';
-import {mplCore, updateV1} from '@metaplex-foundation/mpl-core';
-import {publicKey, generateSigner, signerIdentity, transactionBuilder, createGenericFile, lamports} from '@metaplex-foundation/umi';
+import {mplCore, updateV1, updateCollectionV1} from '@metaplex-foundation/mpl-core';
+import {createNoopSigner, publicKey, generateSigner, signerIdentity, transactionBuilder, createGenericFile, lamports} from '@metaplex-foundation/umi';
 import {walletAdapterIdentity} from '@metaplex-foundation/umi-signer-wallet-adapters';
 import {irysUploader} from '@metaplex-foundation/umi-uploader-irys';
+import {toWeb3JsTransaction} from '@metaplex-foundation/umi-web3js-adapters';
 import {setComputeUnitPrice, transferSol} from '@metaplex-foundation/mpl-toolbox';
 
 function pickProvider(){
@@ -76,5 +77,43 @@ T.sendUpdates=async function(rpc,collection,updates,opt){
     }));
   }
   return res;
+};
+
+/* ---- move the collection's update authority (new wallet pays the fee, old wallet only co-signs) ---- */
+T.activeAddress=function(){return T.provider&&T.provider.publicKey?String(T.provider.publicKey):""};
+T.buildAuthorityTx=async function(rpc,collection,oldAddr,newAddr){
+  var umi=createUmi(rpc).use(mplCore());
+  var nw=createNoopSigner(publicKey(newAddr)),od=createNoopSigner(publicKey(oldAddr));
+  umi.use(signerIdentity(nw));
+  var bh=await umi.rpc.getLatestBlockhash({commitment:"confirmed"});
+  var b=updateCollectionV1(umi,{collection:publicKey(collection),payer:nw,authority:od,newUpdateAuthority:publicKey(newAddr)}).setFeePayer(nw).setBlockhash(bh);
+  var tx=await b.build(umi);
+  T.authTx=toWeb3JsTransaction(tx);T.authBh=bh;
+  return true;
+};
+T.signAuthTx=async function(){
+  if(!T.authTx)throw new Error("Build the transaction first");
+  T.authTx=await T.provider.signTransaction(T.authTx);
+  return T.authTx.signatures.filter(function(s){return s.some(function(b){return b!==0})}).length;
+};
+async function rawRpc(rpc,method,params){var r=await fetch(rpc,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:method,params:params})});return r.json()}
+T.simulateAuthTx=async function(rpc){
+  var b64=btoa(String.fromCharCode.apply(null,T.authTx.serialize()));
+  var r=await rawRpc(rpc,"simulateTransaction",[b64,{encoding:"base64",sigVerify:true,commitment:"confirmed"}]);
+  if(r.error)throw new Error(r.error.message);
+  return r.result.value;
+};
+T.sendAuthTx=async function(rpc){
+  var b64=btoa(String.fromCharCode.apply(null,T.authTx.serialize()));
+  var r=await rawRpc(rpc,"sendTransaction",[b64,{encoding:"base64",preflightCommitment:"confirmed",maxRetries:5}]);
+  if(r.error)throw new Error(r.error.message);
+  var sig=r.result;
+  for(var i=0;i<30;i++){
+    await new Promise(function(x){setTimeout(x,2000)});
+    var st=await rawRpc(rpc,"getSignatureStatuses",[[sig],{searchTransactionHistory:true}]);
+    var v=st.result&&st.result.value&&st.result.value[0];
+    if(v){if(v.err)throw new Error("Transaction failed: "+JSON.stringify(v.err));if(v.confirmationStatus==="confirmed"||v.confirmationStatus==="finalized")return sig}
+  }
+  throw new Error("Not confirmed yet. Signature: "+sig);
 };
 window.TenseiChain=T;

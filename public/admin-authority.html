@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Move collection authority</title>
+<style>
+:root{--ink:#14081f;--pink:#ff6de0;--purple:#c66eff;--mint:#6effdb;--yellow:#ffe76e;--bg:#e6e7ec;--white:#fffaf0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,Segoe UI,Arial,sans-serif}
+header{background:var(--ink);color:var(--white);padding:14px 22px;border-bottom:4px solid var(--pink);font-weight:700;letter-spacing:.1em}
+main{max-width:820px;margin:0 auto;padding:22px}
+.card{background:var(--white);border:3px solid var(--ink);box-shadow:6px 6px 0 var(--purple);padding:18px;margin-bottom:20px}
+h2{margin:0 0 10px;font-size:1rem;letter-spacing:.12em;text-transform:uppercase}
+label{display:block;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;margin:10px 0 4px;font-weight:700}
+input{width:100%;padding:10px;border:2px solid var(--ink);background:#fff;font:inherit;color:var(--ink)}
+button{border:0;background:var(--ink);color:var(--yellow);padding:12px 16px;font:700 .85rem system-ui;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin:6px 8px 0 0}
+button:hover:not(:disabled){background:var(--pink);color:var(--ink)}button:disabled{opacity:.4;cursor:not-allowed}
+.addr{font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all;background:#ececf2;padding:6px 8px;display:block;margin:4px 0}
+.warn{background:var(--yellow);padding:10px;margin:10px 0}.err{background:var(--pink);padding:10px;margin:10px 0}.ok{background:var(--mint);padding:10px;margin:10px 0}
+.note{font-size:.88rem;opacity:.85}
+</style>
+</head>
+<body>
+<header>TENSEI.EXE · MOVE COLLECTION AUTHORITY</header>
+<main>
+<div class="card">
+<h2>What this does</h2>
+<p>It moves the <b>update authority</b> of your collection from the old (compromised) wallet to your new wallet in <b>one transaction</b>. The <b>new wallet pays the fee</b> and the old wallet only signs, so no SOL is sent to the old wallet for a bot to take. Never enter a seed phrase here. This page never asks for one.</p>
+<div class="warn">You need Phantom with <b>both accounts</b> in the same Phantom (add the old one as an imported account if needed) and at least <b>0.01 SOL in the NEW account</b>. Do this soon: the old key is exposed.</div>
+</div>
+
+<div class="card">
+<h2>Settings</h2>
+<label for="key">Helius API key</label><input id="key" type="password" autocomplete="off" placeholder="the same read-only key as before">
+<label for="col">Collection address</label><input id="col" value="7bMrtPKbuXM1mg62bwxm4qePh7vESVuJeUWSjdV5Sb5h">
+<label for="old">Old wallet (current authority, compromised)</label><input id="old" value="71JyffJvtDLURz3KtoWKZPZhKtAJhM7oopRfVGv4poY2">
+</div>
+
+<div class="card">
+<h2>Step 1 · Connect the NEW wallet</h2>
+<p class="note">In Phantom, switch to the <b>new</b> account first, then click the button.</p>
+<button id="b1">Connect new wallet</button>
+<span class="addr" id="newAddr">not connected</span>
+<div id="m1"></div>
+</div>
+
+<div class="card">
+<h2>Step 2 · Prepare and sign with the NEW wallet</h2>
+<button id="b2" disabled>Prepare transaction</button><button id="b3" disabled>Sign with new wallet</button>
+<div id="sum"></div><div id="m2"></div>
+</div>
+
+<div class="card">
+<h2>Step 3 · Switch to the OLD account and sign</h2>
+<p class="note">In Phantom, switch to the <b>old</b> account, then click. Phantom may ask you to connect this site to that account first.</p>
+<button id="b4" disabled>Connect and sign with old wallet</button>
+<div id="m3"></div>
+</div>
+
+<div class="card">
+<h2>Step 4 · Check and send</h2>
+<button id="b5" disabled>Test (no changes)</button><button id="b6" disabled>Send transaction</button>
+<div id="m4"></div>
+</div>
+</main>
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+var NEW="",rpc=function(){return "https://mainnet.helius-rpc.com/?api-key="+encodeURIComponent($("#key").value.trim())};
+function msg(id,cls,t){$(id).innerHTML=t?'<div class="'+cls+'">'+t+'</div>':""}
+function load(){return new Promise(function(res,rej){if(window.TenseiChain)return res();var s=document.createElement("script");s.src="admin-chain.js?v=3";s.onload=res;s.onerror=function(){rej(new Error("Could not load wallet code"))};document.head.appendChild(s)})}
+async function call(m,p){var r=await fetch(rpc(),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:m,params:p})});return r.json()}
+
+$("#b1").onclick=async function(){
+  try{
+    if(!$("#key").value.trim())throw new Error("Paste your Helius key first.");
+    await load();NEW=await window.TenseiChain.connect();
+    $("#newAddr").textContent=NEW;
+    if(NEW===$("#old").value.trim())throw new Error("This is the OLD wallet. Switch Phantom to the NEW account and connect again.");
+    var b=await call("getBalance",[NEW]);var sol=(b.result&&b.result.value||0)/1e9;
+    var h='Connected. Balance: <b>'+sol.toFixed(4)+' SOL</b>. Check that the address above is your <b>new</b> wallet.';
+    if(sol<0.003){msg("#m1","err",h+" Add at least 0.01 SOL to this wallet first.");return}
+    msg("#m1","ok",h);$("#b2").disabled=false;
+  }catch(e){msg("#m1","err",esc(e.message))}
+};
+$("#b2").onclick=async function(){
+  try{
+    await window.TenseiChain.buildAuthorityTx(rpc(),$("#col").value.trim(),$("#old").value.trim(),NEW);
+    $("#sum").innerHTML='<p>Collection <span class="addr">'+esc($("#col").value.trim())+'</span>Authority will move from<span class="addr">'+esc($("#old").value.trim())+'</span>to (your new wallet, also paying the fee)<span class="addr">'+esc(NEW)+'</span></p><div class="warn">Check the last address carefully: it must be your new wallet. Then sign.</div>';
+    $("#b3").disabled=false;msg("#m2","","");
+  }catch(e){msg("#m2","err",esc(e.message))}
+};
+$("#b3").onclick=async function(){
+  try{
+    if(window.TenseiChain.activeAddress()!==NEW)throw new Error("Phantom is on a different account. Switch back to the new account.");
+    var n=await window.TenseiChain.signAuthTx();
+    msg("#m2","ok","Signed with the new wallet ("+n+" of 2 signatures).");$("#b4").disabled=false;
+  }catch(e){msg("#m2","err",esc(e.message))}
+};
+$("#b4").onclick=async function(){
+  try{
+    var T=window.TenseiChain,old=$("#old").value.trim();
+    await T.provider.connect();
+    if(T.activeAddress()!==old)throw new Error("Phantom is on "+T.activeAddress().slice(0,6)+"… not the old wallet ("+old.slice(0,6)+"…). Switch to the old account and click again.");
+    var n=await T.signAuthTx();
+    msg("#m3",n>=2?"ok":"err",n>=2?"Both signatures are in.":"Only "+n+" of 2 signatures. Sign again.");
+    if(n>=2){$("#b5").disabled=false;$("#b6").disabled=false}
+  }catch(e){msg("#m3","err",esc(e.message))}
+};
+$("#b5").onclick=async function(){
+  try{var v=await window.TenseiChain.simulateAuthTx(rpc());msg("#m4",v.err?"err":"ok",v.err?"The test failed: "+esc(JSON.stringify(v.err))+"<br>"+esc((v.logs||[]).slice(-4).join(" | ")):"Test passed. Nothing has been changed yet.")}catch(e){msg("#m4","err",esc(e.message))}
+};
+$("#b6").onclick=async function(){
+  if(!confirm("Move the collection's update authority to the new wallet now?"))return;
+  try{
+    var sig=await window.TenseiChain.sendAuthTx(rpc());
+    var a=await call("getAsset",{id:$("#col").value.trim()}).catch(function(){return null});
+    var cur=a&&a.result&&a.result.authorities&&a.result.authorities[0]&&a.result.authorities[0].address;
+    msg("#m4","ok","Sent and confirmed. Signature: <span class='addr'>"+esc(sig)+"</span>"+(cur?"Collection authority now: <span class='addr'>"+esc(cur)+"</span>"+(cur===NEW?"That is your new wallet.":"The index may take a minute to update; check again on Solscan."):""));
+  }catch(e){msg("#m4","err",esc(e.message))}
+};
+})();
+</script>
+</body>
+</html>
