@@ -59,7 +59,9 @@ T.sendUpdates=async function(rpc,collection,updates,opt){
   var res={ok:[],fail:[]};
   for(var s=0;s<groups.length;s+=batch){
     var part=groups.slice(s,s+batch);
-    var bh=await umi.rpc.getLatestBlockhash({commitment:"confirmed"});
+    var lb=await rawRpc(rpc,"getLatestBlockhash",[{commitment:"confirmed"}]);
+    if(!lb.result)throw new Error("Could not get a recent blockhash");
+    var bh={blockhash:lb.result.value.blockhash,lastValidBlockHeight:lb.result.value.lastValidBlockHeight};
     var txs=part.map(function(g){
       var b=transactionBuilder().add(setComputeUnitPrice(umi,{microLamports:prio}));
       g.forEach(function(u){b=b.add(updateV1(umi,{asset:publicKey(u.asset),collection:publicKey(collection),newUri:u.uri}))});
@@ -67,30 +69,38 @@ T.sendUpdates=async function(rpc,collection,updates,opt){
     });
     var signed;
     try{signed=await umi.identity.signAllTransactions(txs)}catch(e){part.forEach(function(g){g.forEach(function(u){res.fail.push({asset:u.asset,error:"not approved in wallet"})})});log(res);return res}
-    await Promise.all(signed.map(async function(tx,k){
-      var g=part[k];
+    /* send every transaction once (spaced out for the free RPC plan), then check all of them with one status call per round */
+    var items=signed.map(function(tx,k){return {g:part[k],raw:btoa(String.fromCharCode.apply(null,umi.transactions.serialize(tx))),sig:base58.deserialize(tx.signatures[0])[0],state:"sent",err:""}});
+    for(var k=0;k<items.length;k++){
+      var it=items[k];
+      try{var sr=await rawRpc(rpc,"sendTransaction",[it.raw,{encoding:"base64",preflightCommitment:"confirmed",maxRetries:5}]);
+        if(sr.error&&!/already been processed/i.test(sr.error.message||"")){it.state="fail";it.err=sr.error.message||JSON.stringify(sr.error)}}
+      catch(e){it.err=String(e.message||e)}
+      await new Promise(function(x){setTimeout(x,150)});
+    }
+    for(var round=0;round<60;round++){
+      var open=items.filter(function(it){return it.state==="sent"});if(!open.length)break;
+      await new Promise(function(x){setTimeout(x,2500)});
       try{
-        var sig=await umi.rpc.sendTransaction(tx,{commitment:"confirmed",maxRetries:5,skipPreflight:false});
-        var sigStr=base58.deserialize(sig)[0],raw=btoa(String.fromCharCode.apply(null,umi.transactions.serialize(tx))),c=null,hh=0;
-        for(var n=0;n<60&&!c;n++){
-          var st=await rawRpc(rpc,"getSignatureStatuses",[[sigStr]]),v=st.result&&st.result.value&&st.result.value[0];
-          if(v){if(v.err)throw new Error(JSON.stringify(v.err));if(v.confirmationStatus==="confirmed"||v.confirmationStatus==="finalized"){c=true;break}}
-          var h=await rawRpc(rpc,"getBlockHeight",[{commitment:"confirmed"}]);hh=h.result||0;
-          if(hh>Number(bh.lastValidBlockHeight)+5)throw new Error("expired: block height "+hh+" passed "+bh.lastValidBlockHeight+" sig "+sigStr);
-          if(n%2===0)await rawRpc(rpc,"sendTransaction",[raw,{encoding:"base64",skipPreflight:true,maxRetries:0}]);
-          await new Promise(function(x){setTimeout(x,1500)});
+        var st=await rawRpc(rpc,"getSignatureStatuses",[open.map(function(it){return it.sig}),{searchTransactionHistory:round>20}]);
+        var vals=(st.result&&st.result.value)||[];
+        open.forEach(function(it,j){var v=vals[j];if(!v)return;
+          if(v.err){it.state="fail";it.err=JSON.stringify(v.err)}
+          else if(v.confirmationStatus==="confirmed"||v.confirmationStatus==="finalized")it.state="ok"});
+        var still=items.filter(function(it){return it.state==="sent"});
+        if(still.length){
+          var h=await rawRpc(rpc,"getBlockHeight",[{commitment:"confirmed"}]);
+          if((h.result||0)>Number(bh.lastValidBlockHeight)+10){still.forEach(function(it){it.state="fail";it.err="expired before landing (nothing changed), sig "+it.sig});}
+          else if(round%3===2){for(var q=0;q<still.length;q++){await rawRpc(rpc,"sendTransaction",[still[q].raw,{encoding:"base64",skipPreflight:true,maxRetries:0}]).catch(function(){});await new Promise(function(x){setTimeout(x,150)})}}
         }
-        if(!c)throw new Error("timed out waiting for confirmation, sig "+sigStr);
-        g.forEach(function(u){res.ok.push(u.asset)});
-      }catch(e){
-        var landed=false;
-        try{var st=await rawRpc(rpc,"getSignatureStatuses",[[base58.deserialize(tx.signatures[0])[0]],{searchTransactionHistory:true}]);
-          var v=st.result&&st.result.value&&st.result.value[0];landed=!!(v&&!v.err&&(v.confirmationStatus==="confirmed"||v.confirmationStatus==="finalized"))}catch(_){}
-        if(landed)g.forEach(function(u){res.ok.push(u.asset)});
-        else g.forEach(function(u){res.fail.push({asset:u.asset,error:String(e.message||e)})});
-      }
-      log(res);
-    }));
+      }catch(e){}
+      log({ok:res.ok.concat([].concat.apply([],items.filter(function(it){return it.state==="ok"}).map(function(it){return it.g.map(function(u){return u.asset})}))),fail:res.fail});
+    }
+    items.forEach(function(it){
+      if(it.state==="ok")it.g.forEach(function(u){res.ok.push(u.asset)});
+      else it.g.forEach(function(u){res.fail.push({asset:u.asset,error:it.err||("not confirmed yet, sig "+it.sig)})});
+    });
+    log(res);
   }
   return res;
 };
@@ -137,7 +147,15 @@ T.signAuthTx=async function(){
   T.authTx=await T.provider.signTransaction(T.authTx);
   return T.authTx.signatures.filter(function(s){return s.some(function(b){return b!==0})}).length;
 };
-async function rawRpc(rpc,method,params){var r=await fetch(rpc,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:method,params:params})});return r.json()}
+async function rawRpc(rpc,method,params){
+  /* the free Helius plan limits requests per second: wait and retry instead of failing */
+  for(var i=0;;i++){
+    var r=null;try{r=await fetch(rpc,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:method,params:params})})}catch(e){if(i>=8)throw e}
+    if(r&&r.ok){try{return await r.json()}catch(e){if(i>=8)throw e}}
+    else if(r&&r.status!==429&&r.status<500||i>=8)throw new Error("RPC "+(r?r.status:"network")+" on "+method);
+    await new Promise(function(x){setTimeout(x,800*Math.pow(1.6,i)+Math.random()*400)});
+  }
+}
 T.simulateAuthTx=async function(rpc){
   var b64=btoa(String.fromCharCode.apply(null,T.authTx.serialize()));
   var r=await rawRpc(rpc,"simulateTransaction",[b64,{encoding:"base64",sigVerify:true,commitment:"confirmed"}]);
