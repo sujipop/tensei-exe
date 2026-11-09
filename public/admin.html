@@ -75,7 +75,7 @@ code{background:#ececf2;padding:1px 5px}
 
 <section class="card hide" id="sChain">
 <h2>4. Put the changes on chain</h2>
-<p class="note">This changes your NFTs for real and costs a small network fee. Start with the test. Each changed NFT gets a new metadata file (uploaded to Arweave through Irys, free for files this small) and one update that points it to the new file.</p>
+<p class="note">This changes your NFTs for real and costs a small network fee. Start with the test. Each changed NFT gets a new metadata file (stored on Arweave through Irys, about 0.000004 SOL per file) and one update that points it to the new file. Your wallet first sends a small SOL amount to a temporary upload key that exists only in this tab; the leftover comes back at the end.</p>
 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button id="wconn">Connect wallet</button><span id="waddr" class="note"></span></div>
 <div id="wwarn"></div>
 <div class="stats" id="cstats"></div>
@@ -327,24 +327,42 @@ $("#wconn").onclick=function(){
 async function sameJson(uri,obj){
   try{var r=await fetch(uri,{cache:"no-store"});if(!r.ok)return false;var j=await r.json();return JSON.stringify(j)===JSON.stringify(obj)}catch(e){return false}
 }
+function withTimeout(p,ms,msg){return Promise.race([p,new Promise(function(_,j){setTimeout(function(){j(new Error(msg))},ms)})])}
 async function run(list){
   busy=true;window.chainRefresh();
-  var T=window.TenseiChain,up=T.makeUploader(rpcUrl()),i=0,bad=[];
-  clog("Uploading new metadata files…");$("#cprog").style.width="2%";
-  async function w(){while(i<list.length){var a=list[i++];
-    try{
-      if(!NEWURI[a.id]){var u=await T.uploadJson(up,META[a.id]);var okk=false;for(var k=0;k<6&&!okk;k++){okk=await sameJson(u,META[a.id]);if(!okk)await new Promise(function(r){setTimeout(r,1500)})}
-        if(!okk)throw new Error("uploaded file could not be read back");NEWURI[a.id]=u}
-    }catch(e){bad.push(a.name+": "+String(e.message||e))}
-    $("#cprog").style.width=(2+60*i/list.length)+"%";clog("Uploaded "+Math.min(i,list.length)+" / "+list.length)}}
-  await Promise.all(Array.from({length:5},w));
+  var T=window.TenseiChain,bad=[],pending=list.filter(function(a){return !NEWURI[a.id]});
+  try{
+    if(pending.length){
+      var need=Math.ceil(pending.length*4000+Math.ceil(pending.length/40)*5000+20000);
+      var have=await T.tempBalance(rpcUrl());
+      if(have<need){
+        var send=need-have;
+        if(!confirm("Storing "+pending.length+" new files on Arweave costs about "+(pending.length*4000/1e9).toFixed(5)+" SOL.\n\nYour wallet will now send "+(send/1e9).toFixed(5)+" SOL to a temporary upload key that lives only in this browser tab ("+T.tempAddress(rpcUrl()).slice(0,6)+"…). Whatever is left is sent back to your wallet at the end.\n\nContinue?")){busy=false;window.chainRefresh();return}
+        clog("Approve the small SOL transfer in your wallet…");
+        await withTimeout(T.fundTemp(rpcUrl(),send),120000,"The funding transfer was not confirmed in time");
+      }
+      var up=T.makeUploader(rpcUrl()),done=0;
+      for(var i=0;i<pending.length;i+=40){
+        var chunk=pending.slice(i,i+40);
+        clog("Uploading files "+Math.min(i+chunk.length,pending.length)+" / "+pending.length+"…");
+        try{
+          var uris=await withTimeout(T.uploadMany(up,chunk.map(function(a){return META[a.id]})),180000,"upload timed out");
+          for(var k=0;k<chunk.length;k++){
+            var okk=false;for(var t=0;t<6&&!okk;t++){okk=await sameJson(uris[k],META[chunk[k].id]);if(!okk)await new Promise(function(r){setTimeout(r,1500)})}
+            if(okk)NEWURI[chunk[k].id]=uris[k];else bad.push(chunk[k].name+": file could not be read back")}
+        }catch(e){chunk.forEach(function(a){bad.push(a.name+": "+String(e.message||e))})}
+        $("#cprog").style.width=(2+60*Math.min(i+chunk.length,pending.length)/pending.length)+"%";
+      }
+    }
+  }catch(e){busy=false;window.chainRefresh();clog('<div class="err">Stopped before updating anything: '+esc(String(e.message||e))+'</div>');return}
   var ready=list.filter(function(a){return NEWURI[a.id]});
   if(!ready.length){busy=false;window.chainRefresh();clog('<div class="err">No files were uploaded. '+esc(bad.slice(0,3).join(" | "))+'</div>');return}
   clog("Files ready ("+ready.length+"). Approve the transactions in your wallet…");$("#cprog").style.width="65%";
   var res=await T.sendUpdates(rpcUrl(),$("#col").value.trim(),ready.map(function(a){return {asset:a.id,uri:NEWURI[a.id]}}),{onProgress:function(r){$("#cprog").style.width=(65+35*(r.ok.length+r.fail.length)/ready.length)+"%";clog("Updated "+r.ok.length+" · failed "+r.fail.length+" of "+ready.length)}});
   res.ok.forEach(function(id){DONE[id]=NEWURI[id]});
+  var back="";try{var sent=await T.sweepTemp(rpcUrl(),WALLET);back=sent?" Returned "+(sent/1e9).toFixed(5)+" SOL of unused upload funds to your wallet.":""}catch(e){back=" (Could not return the leftover upload funds automatically; the amount is tiny.)"}
   busy=false;$("#cprog").style.width="100%";window.chainRefresh();
-  clog("<b>Finished.</b> Updated "+res.ok.length+" NFTs."+(res.fail.length?' <div class="err">'+res.fail.length+' failed (they stay in the list, run again to retry): '+esc(res.fail.slice(0,3).map(function(f){return f.error}).join(" | "))+'</div>':"")+(bad.length?' <div class="warn">'+bad.length+' not uploaded: '+esc(bad.slice(0,3).join(" | "))+'</div>':"")+" Click Verify on chain to double-check.");
+  clog("<b>Finished.</b> Updated "+res.ok.length+" NFTs."+back+(res.fail.length?' <div class="err">'+res.fail.length+' failed (they stay in the list, run again to retry): '+esc(res.fail.slice(0,3).map(function(f){return f.error}).join(" | "))+'</div>':"")+(bad.length?' <div class="warn">'+bad.length+' not uploaded: '+esc(bad.slice(0,3).join(" | "))+'</div>':"")+" Click Verify on chain to double-check.");
 }
 $("#runTest").onclick=function(){
   var n=Math.max(1,Math.min(20,parseInt($("#ntest").value,10)||3)),list=todo().slice(0,n);

@@ -1,9 +1,9 @@
 import {createUmi} from '@metaplex-foundation/umi-bundle-defaults';
 import {mplCore, updateV1} from '@metaplex-foundation/mpl-core';
-import {publicKey, generateSigner, signerIdentity, transactionBuilder, createGenericFile} from '@metaplex-foundation/umi';
+import {publicKey, generateSigner, signerIdentity, transactionBuilder, createGenericFile, lamports} from '@metaplex-foundation/umi';
 import {walletAdapterIdentity} from '@metaplex-foundation/umi-signer-wallet-adapters';
 import {irysUploader} from '@metaplex-foundation/umi-uploader-irys';
-import {setComputeUnitPrice} from '@metaplex-foundation/mpl-toolbox';
+import {setComputeUnitPrice, transferSol} from '@metaplex-foundation/mpl-toolbox';
 
 function pickProvider(){
   var w=window;
@@ -16,17 +16,37 @@ T.connect=async function(){
   var r=await p.connect();T.provider=p;
   return String(r&&r.publicKey?r.publicKey:p.publicKey);
 };
-/* Uploads use a throw-away key made in this tab: files this small are free on Irys, so no wallet pop-up per file. */
+/* Arweave storage is paid with a small amount of SOL held by a throw-away key that only exists in this tab.
+   The wallet funds it once (one approval); the leftover is sent back at the end. No wallet pop-up per file. */
+T.temp=null;
 T.makeUploader=function(rpc){
   var umi=createUmi(rpc).use(irysUploader({address:"https://uploader.irys.xyz"}));
-  umi.use(signerIdentity(generateSigner(umi)));
+  var k=T.temp||(T.temp=generateSigner(umi));
+  umi.use(signerIdentity(k));
   return umi;
 };
-T.uploadJson=async function(umi,obj){
-  var bytes=new TextEncoder().encode(JSON.stringify(obj));
-  var f=createGenericFile(bytes,"metadata.json",{contentType:"application/json"});
-  var uris=await umi.uploader.upload([f]);
-  return "https://gateway.irys.xyz/"+String(uris[0]).split("/").pop();
+T.tempAddress=function(rpc){T.makeUploader(rpc);return String(T.temp.publicKey)};
+T.fundTemp=async function(rpc,lamportsAmount){
+  var umi=createUmi(rpc).use(mplCore()).use(walletAdapterIdentity(T.provider));
+  T.makeUploader(rpc);
+  await transferSol(umi,{destination:T.temp.publicKey,amount:lamports(lamportsAmount)}).sendAndConfirm(umi,{confirm:{commitment:"confirmed"}});
+};
+T.tempBalance=async function(rpc){
+  var umi=createUmi(rpc);T.makeUploader(rpc);
+  var b=await umi.rpc.getBalance(T.temp.publicKey);return Number(b.basisPoints);
+};
+T.sweepTemp=async function(rpc,toAddress){
+  if(!T.temp)return 0;
+  var umi=createUmi(rpc);umi.use(signerIdentity(T.temp));
+  var bal=Number((await umi.rpc.getBalance(T.temp.publicKey)).basisPoints);
+  var send=bal-5000;if(send<=0)return 0;
+  await transferSol(umi,{source:T.temp,destination:publicKey(toAddress),amount:lamports(send)}).sendAndConfirm(umi,{confirm:{commitment:"confirmed"}});
+  return send;
+};
+T.uploadMany=async function(umi,objs){
+  var files=objs.map(function(o,i){return createGenericFile(new TextEncoder().encode(JSON.stringify(o)),"metadata"+i+".json",{contentType:"application/json"})});
+  var uris=await umi.uploader.upload(files);
+  return uris.map(function(u){return "https://gateway.irys.xyz/"+String(u).split("/").pop()});
 };
 /* Sends Core "update uri" instructions: 6 per transaction, one wallet approval per batch of transactions. */
 T.sendUpdates=async function(rpc,collection,updates,opt){
