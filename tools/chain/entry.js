@@ -56,8 +56,10 @@ T.uploadMany=async function(umi,objs){
   return uris.map(function(u){return "https://gateway.irys.xyz/"+String(u).split("/").pop()});
 };
 /* Sends Core "update uri" instructions: 6 per transaction, one wallet approval per batch of transactions. */
+var PUBLIC_RPC="https://api.mainnet-beta.solana.com";
+function broadcast(raw){return fetch(PUBLIC_RPC,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"sendTransaction",params:[raw,{encoding:"base64",skipPreflight:true,maxRetries:0}]})}).catch(function(){})}
 T.sendUpdates=async function(rpc,collection,updates,opt){
-  opt=opt||{};var per=opt.perTx||6,batch=opt.txPerApproval||20,prio=opt.priority||50000,log=opt.onProgress||function(){};
+  opt=opt||{};var per=opt.perTx||6,batch=opt.txPerApproval||20,prio=opt.priority||300000,log=opt.onProgress||function(){};
   var umi=createUmi(rpc).use(mplCore()).use(walletAdapterIdentity(T.provider));
   var groups=[];for(var i=0;i<updates.length;i+=per)groups.push(updates.slice(i,i+per));
   var res={ok:[],fail:[]};
@@ -67,7 +69,7 @@ T.sendUpdates=async function(rpc,collection,updates,opt){
     if(!lb.result)throw new Error("Could not get a recent blockhash");
     var bh={blockhash:lb.result.value.blockhash,lastValidBlockHeight:lb.result.value.lastValidBlockHeight};
     var txs=part.map(function(g){
-      var b=transactionBuilder().add(setComputeUnitLimit(umi,{units:400000})).add(setComputeUnitPrice(umi,{microLamports:prio}));
+      var b=transactionBuilder().add(setComputeUnitLimit(umi,{units:120000})).add(setComputeUnitPrice(umi,{microLamports:prio}));
       g.forEach(function(u){b=b.add(updateV1(umi,{asset:publicKey(u.asset),collection:publicKey(collection),newUri:u.uri}))});
       return b.setBlockhash(bh).build(umi);
     });
@@ -78,7 +80,8 @@ T.sendUpdates=async function(rpc,collection,updates,opt){
     for(var k=0;k<items.length;k++){
       var it=items[k];
       try{var sr=await rawRpc(rpc,"sendTransaction",[it.raw,{encoding:"base64",preflightCommitment:"confirmed",maxRetries:5}]);
-        if(sr.error&&!/already been processed/i.test(sr.error.message||"")){it.state="fail";it.err=sr.error.message||JSON.stringify(sr.error)}}
+        if(sr.error&&!/already been processed/i.test(sr.error.message||"")){it.state="fail";it.err=sr.error.message||JSON.stringify(sr.error)}
+        else broadcast(it.raw)}
       catch(e){it.err=String(e.message||e)}
       await new Promise(function(x){setTimeout(x,150)});
     }
@@ -94,8 +97,8 @@ T.sendUpdates=async function(rpc,collection,updates,opt){
         var still=items.filter(function(it){return it.state==="sent"});
         if(still.length){
           var h=await rawRpc(rpc,"getBlockHeight",[{commitment:"confirmed"}]);
-          if((h.result||0)>Number(bh.lastValidBlockHeight)+10){still.forEach(function(it){it.state="fail";it.err="expired before landing (nothing changed), sig "+it.sig});}
-          else if(round%3===2){for(var q=0;q<still.length;q++){await rawRpc(rpc,"sendTransaction",[still[q].raw,{encoding:"base64",skipPreflight:true,maxRetries:0}]).catch(function(){});await new Promise(function(x){setTimeout(x,150)})}}
+          if((h.result||0)>Number(bh.lastValidBlockHeight)+10){still.forEach(function(it){it.state="fail";it.err=(it.err?it.err+"; then ":"")+"expired before landing (nothing changed), sig "+it.sig});}
+          else{for(var q=0;q<still.length;q++){broadcast(still[q].raw);if(round%3===2)await rawRpc(rpc,"sendTransaction",[still[q].raw,{encoding:"base64",skipPreflight:true,maxRetries:0}]).catch(function(){});await new Promise(function(x){setTimeout(x,150)})}}
         }
       }catch(e){}
       log({ok:res.ok.concat([].concat.apply([],items.filter(function(it){return it.state==="ok"}).map(function(it){return it.g.map(function(u){return u.asset})}))),fail:res.fail});
