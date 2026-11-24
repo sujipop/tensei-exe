@@ -69,7 +69,7 @@ code{background:#ececf2;padding:0 4px}
   <div class="card">
     <h2>Library</h2>
     <div class="drop" id="drop">Drop video files here<br><button id="pick" class="alt">Upload from computer</button><input id="file" type="file" accept="video/*" multiple hidden></div>
-    <div class="row"><input id="link" type="text" placeholder="…or paste a video link (ArtCraft, Bunny…)"></div>
+    <div class="row"><input id="link" type="text" placeholder="…or paste a link (getartcraft.com/media/… or a video file)"></div>
     <button id="addLink" class="ghost">Add link</button>
     <div class="lib" id="lib" style="margin-top:10px"></div>
     <p class="note">Your library is saved in this browser only.</p>
@@ -166,9 +166,28 @@ var dz=$("#drop");
 dz.addEventListener("dragover",function(e){e.preventDefault();dz.classList.add("on")});
 dz.addEventListener("dragleave",function(){dz.classList.remove("on")});
 dz.addEventListener("drop",function(e){e.preventDefault();dz.classList.remove("on");addFiles(e.dataTransfer.files)});
+/* an ArtCraft page link (getartcraft.com/media/m_…) is looked up to find the actual video file */
+function findLink(o){var hit="";(function walk(x){if(hit||!x||typeof x!=="object")return;for(var k in x){var v=x[k];if(typeof v==="string"&&/^https:\/\/\S+\.(mp4|mov|webm)(\?|$)/i.test(v)){hit=v;return}walk(v)}})(o);return hit}
+async function resolveArtcraft(tok){
+  var h={};try{h.authorization=key()}catch(e){}
+  var r=await fetch("/api/ac/v1/media_files/file/"+tok,{headers:h});var t=await r.text(),j=null;try{j=JSON.parse(t)}catch(e){}
+  if(!r.ok||!j)throw new Error("ArtCraft could not find that video ("+r.status+"): "+t.slice(0,200));
+  var mf=j.media_file||j;
+  var u=(mf.media_links&&mf.media_links.cdn_url)||mf.cdn_url||findLink(j);
+  if(!u&&mf.public_bucket_path)u="https://cdn-2.fakeyou.com"+mf.public_bucket_path;
+  if(!u)throw new Error("ArtCraft found the item but it has no video file link.");
+  return {url:u,name:(mf.maybe_title||mf.maybe_original_filename||tok)};
+}
 $("#addLink").onclick=async function(){
-  var u=$("#link").value.trim();if(!/^https:\/\//.test(u)){alert("Paste an https:// link to a video file.");return}
-  var it=await addItem({kind:"link",name:u.split("/").pop().split("?")[0]||"linked video",url:u});$("#link").value="";select(it.id);
+  var u=$("#link").value.trim(),b=this,m=u.match(/(?:^|\/media\/)(m_[a-z0-9]{6,60})/i);
+  if(!m&&!/^https:\/\//.test(u)){alert("Paste an https:// link to a video file, or an ArtCraft media link.");return}
+  b.disabled=true;
+  try{
+    var name=u.split("/").pop().split("?")[0]||"linked video";
+    if(m){var f=await resolveArtcraft(m[1]);u=f.url;name=f.name}
+    var it=await addItem({kind:"link",name:name,url:u});$("#link").value="";select(it.id);
+  }catch(e){alert(e.message||e)}
+  b.disabled=false;
 };
 
 /* ---------- getting the bytes of a clip (for trimming / uploading) ---------- */
@@ -188,7 +207,8 @@ function select(id){
   var s=src(it);
   if(!s){$("#viewer").innerHTML='<div class="empty">'+(it.status==="failed"?"This generation failed: "+esc(it.error||""):"Still generating… "+(it.progress||0)+"%")+'</div>';$("#trimBox").hidden=true;$("#fixCard").hidden=true;return}
   $("#viewer").innerHTML='<video class="player" id="v" controls playsinline src="'+esc(s)+'"></video>';
-  V=$("#v");$("#trimBox").hidden=false;$("#fixCard").hidden=false;$("#cmpBtn").hidden=!it.parent||!byId(it.parent);
+  V=$("#v");V.onerror=function(){msg("#trimMsg","err","This link doesn't play as a video. It may be a web page rather than the video file itself. For ArtCraft, paste the getartcraft.com/media/… link and it will be looked up.")};
+  $("#trimBox").hidden=false;$("#fixCard").hidden=false;$("#cmpBtn").hidden=!it.parent||!byId(it.parent);
   V.onloadedmetadata=function(){DUR=V.duration||0;TIN=0;TOUT=DUR;drawTrim();
     var w=V.videoWidth,h=V.videoHeight;if(w&&h)$("#ar").value=Math.abs(w/h-1)<.1?"square":(w>h?"wide_sixteen_by_nine":"tall_nine_by_sixteen");
     syncDur()};

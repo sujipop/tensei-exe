@@ -93,9 +93,11 @@ async function editorApi(req, env, url) {
     return J({ url: url.origin + "/api/clip/" + id + "." + ext });
   }
   // /api/ac/v1/omni_api/...  forwards to ArtCraft with your key (key is not stored)
-  if (p.startsWith("/api/ac/v1/omni_api/")) {
+  if (p.startsWith("/api/ac/v1/omni_api/") || (req.method === "GET" && /^\/api\/ac\/v1\/media_files\/file\/m_[a-z0-9]{6,60}$/.test(p))) {
     const target = AC + p.slice(7) + url.search;
-    const r = await fetch(target, { method: req.method, headers: { authorization: auth, "content-type": "application/json", accept: "application/json" }, body: req.method === "GET" ? undefined : await req.text() });
+    const h = { "content-type": "application/json", accept: "application/json" };
+    if (auth) h.authorization = auth;
+    const r = await fetch(target, { method: req.method, headers: h, body: req.method === "GET" ? undefined : await req.text() });
     return new Response(await r.text(), { status: r.status, headers: { "content-type": r.headers.get("content-type") || "application/json", "cache-control": "no-store" } });
   }
   // GET /api/media?u=<https url>  fetches a finished video so the page can trim/store it (needs a valid ArtCraft key)
