@@ -102,7 +102,7 @@ code{background:#ececf2;padding:0 4px}
     <div class="row">
       <div><label class="f" for="model">Model</label><select id="model"><option value="seedance_2p5">Seedance 2.5</option><option value="seedance_2p0">Seedance 2.0</option><option value="__custom">Other (type the name)</option></select><input id="modelCustom" type="text" placeholder="model name" hidden style="margin-top:6px"></div>
       <div><label class="f" for="dur">Length (seconds)</label><input id="dur" type="number" min="2" max="30" step="1" value="5"></div>
-      <div><label class="f" for="ar">Aspect ratio</label><select id="ar"><option value="wide_sixteen_by_nine">16:9 wide</option><option value="tall_nine_by_sixteen">9:16 tall</option><option value="square">1:1 square</option></select></div>
+      <div><label class="f" for="ar">Aspect ratio</label><select id="ar"><option value="auto">Auto (match reference)</option><option value="wide_sixteen_by_nine">16:9 wide</option><option value="tall_nine_by_sixteen">9:16 tall</option><option value="square">1:1 square</option><option value="wide_twenty_one_by_nine">21:9 wide</option><option value="wide_four_by_three">4:3 wide</option><option value="wide_three_by_two">3:2 wide</option><option value="tall_three_by_four">3:4 tall</option><option value="tall_four_by_five">4:5 tall</option><option value="tall_two_by_three">2:3 tall</option></select></div>
       <div><label class="f" for="res">Resolution</label><select id="res"><option value="seven_twenty_p">720p</option><option value="ten_eighty_p">1080p</option><option value="four_eighty_p">480p</option></select></div>
     </div>
     <div class="row">
@@ -210,7 +210,6 @@ function select(id){
   V=$("#v");V.onerror=function(){msg("#trimMsg","err","This link doesn't play as a video. It may be a web page rather than the video file itself. For ArtCraft, paste the getartcraft.com/media/… link and it will be looked up.")};
   $("#trimBox").hidden=false;$("#fixCard").hidden=false;$("#cmpBtn").hidden=!it.parent||!byId(it.parent);
   V.onloadedmetadata=function(){DUR=V.duration||0;TIN=0;TOUT=DUR;drawTrim();
-    var w=V.videoWidth,h=V.videoHeight;if(w&&h)$("#ar").value=Math.abs(w/h-1)<.1?"square":(w>h?"wide_sixteen_by_nine":"tall_nine_by_sixteen");
     syncDur()};
   V.ontimeupdate=function(){drawTrim();if(playingSel&&V.currentTime>=TOUT){V.pause();playingSel=false}};
 }
@@ -298,9 +297,19 @@ $("#check").onclick=async function(){
     if(r.status===401)return msg("#fixMsg","err","ArtCraft did not accept your API key. "+esc(t));
     if(r.status<300)return msg("#fixMsg","warn","Unexpected: ArtCraft accepted the test request. Check your ArtCraft jobs. "+esc(t.slice(0,300)));
     var bad=t.indexOf(m)>=0||/model/i.test(t)&&!/aspect/i.test(t);
-    msg("#fixMsg",bad?"err":"ok",(bad?"ArtCraft does <b>not</b> accept “"+esc(m)+"” through the API yet.":"ArtCraft <b>accepts</b> “"+esc(m)+"”. (It only complained about the deliberately wrong setting.)")+'<br><span class="note">ArtCraft said: '+esc(t.slice(0,600))+'</span>');
+    msg("#fixMsg",bad?"err":"ok",(bad?"✗ “"+esc(m)+"” does <b>not</b> work through the API yet. Pick another model.":"✓ “"+esc(m)+"” works through the API. You're good to generate.")+'<details class="note"><summary>Technical details</summary>The check sends a deliberately wrong setting so nothing is generated. ArtCraft replied: '+esc(t.slice(0,600))+'</details>');
   }catch(e){msg("#fixMsg","err",esc(e.message||e))}
 };
+/* preferred: store the file at ArtCraft itself (returns a media token). null = this upload route is not available */
+async function uploadToArtcraft(blob,kind,fname){
+  var fd=new FormData();fd.append("uuid_idempotency_token",uuid());fd.append("file",blob,fname);
+  var r=await fetch("/api/ac/v1/omni_api/upload/"+kind,{method:"POST",headers:{authorization:key()},body:fd});
+  var t=await r.text(),j=null;try{j=JSON.parse(t)}catch(e){}
+  if(r.status===401)throw new Error("ArtCraft did not accept your API key.");
+  if(r.ok&&j&&j.media_file_token)return j.media_file_token;
+  if(r.status===404||r.status===405||r.status===501)return null;
+  throw new Error("Uploading to ArtCraft failed ("+r.status+"): "+String((j&&(j.error_reason||j.error||j.message))||t).slice(0,300));
+}
 async function uploadClip(blob,ext){
   var r=await fetch("/api/clip?ext="+ext,{method:"POST",headers:{authorization:key(),"content-type":blob.type||"application/octet-stream"},body:blob});
   var j={};try{j=await r.json()}catch(e){}
@@ -320,18 +329,26 @@ $("#gen").onclick=async function(){
     var blob=await bytesOf(parent);
     if(trimmed())blob=await doTrim(blob,TIN,TOUT,"exact",function(t){msg("#fixMsg","info",t)});
     if(blob.size>25*1048576)throw new Error("The clip is "+(blob.size/1048576).toFixed(1)+" MB; the limit is 25 MB. Trim it shorter.");
-    msg("#fixMsg","info","Uploading the reference clip…");$("#genBar i").style.width="15%";
-    var vurl=await uploadClip(blob,"mp4"),imgs=[];
-    var fl=$("#refImgs").files;
-    for(var i=0;i<fl.length;i++){var ext=/png/.test(fl[i].type)?"png":/webp/.test(fl[i].type)?"webp":"jpg";imgs.push(await uploadClip(fl[i],ext))}
+    msg("#fixMsg","info","Uploading the reference clip to ArtCraft…");$("#genBar i").style.width="15%";
+    var body={model:m,idempotency_token:uuid(),prompt:p,duration_seconds:dur,aspect_ratio:$("#ar").value,resolution:$("#res").value,generate_audio:$("#audio").checked};
+    var fl=$("#refImgs").files,vtok=await uploadToArtcraft(blob,"video","reference.mp4"),vurl="";
+    if(vtok){
+      body.reference_video_media_tokens=[vtok];
+      var itoks=[];for(var i=0;i<fl.length;i++)itoks.push(await uploadToArtcraft(fl[i],"image",fl[i].name||"ref.png"));
+      if(itoks.length)body.reference_image_media_tokens=itoks.filter(Boolean);
+    }else{
+      /* fallback: host the files on this site; wait so they are reachable worldwide before ArtCraft downloads them */
+      vurl=await uploadClip(blob,"mp4");var imgs=[];
+      for(var i2=0;i2<fl.length;i2++){var ext=/png/.test(fl[i2].type)?"png":/webp/.test(fl[i2].type)?"webp":"jpg";imgs.push(await uploadClip(fl[i2],ext))}
+      body.reference_video_urls=[vurl];if(imgs.length)body.reference_image_urls=imgs;
+      for(var w=60;w>0;w-=5){msg("#fixMsg","info","Making the clip reachable for ArtCraft… "+w+"s");await new Promise(function(x){setTimeout(x,5000)})}
+    }
     msg("#fixMsg","info","Sending to ArtCraft…");$("#genBar i").style.width="25%";
-    var body={model:m,idempotency_token:uuid(),prompt:p,duration_seconds:dur,aspect_ratio:$("#ar").value,resolution:$("#res").value,generate_audio:$("#audio").checked,reference_video_urls:[vurl]};
-    if(imgs.length)body.reference_image_urls=imgs;
     var r=await ac("generate/video",body);
     if(r.status>=300||!r.json)throw new Error(r.status===402?"Not enough ArtCraft credits.":"ArtCraft refused the request: "+String(errText(r)).slice(0,500));
     var tok=r.json.inference_job_token||(r.json.all_job_tokens&&r.json.all_job_tokens[0]);
     if(!tok)throw new Error("ArtCraft did not return a job id: "+r.text.slice(0,300));
-    var it=await addItem({kind:"gen",name:parent.name.replace(/\.(mp4|mov|webm|m4v)$/i,"")+" · fix",parent:parent.id,prompt:p,model:m,job:tok,status:"running",progress:0,ref:vurl});
+    var it=await addItem({kind:"gen",name:parent.name.replace(/\.(mp4|mov|webm|m4v)$/i,"")+" · fix",parent:parent.id,prompt:p,model:m,job:tok,status:"running",progress:0,ref:vurl||vtok});
     msg("#fixMsg","ok","Sent. ArtCraft is generating it now. It appears in your library as “"+esc(it.name)+"” and fills in when it's done. You can keep working meanwhile.");
     poll();
   }catch(e){msg("#fixMsg","err",esc(e.message||e))}

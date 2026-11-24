@@ -95,9 +95,11 @@ async function editorApi(req, env, url) {
   // /api/ac/v1/omni_api/...  forwards to ArtCraft with your key (key is not stored)
   if (p.startsWith("/api/ac/v1/omni_api/") || (req.method === "GET" && /^\/api\/ac\/v1\/media_files\/file\/m_[a-z0-9]{6,60}$/.test(p))) {
     const target = AC + p.slice(7) + url.search;
-    const h = { "content-type": "application/json", accept: "application/json" };
+    const isUpload = /^\/api\/ac\/v1\/omni_api\/upload\/(video|image|audio)$/.test(p) && req.method === "POST";
+    const h = { "content-type": isUpload ? (req.headers.get("content-type") || "") : "application/json", accept: "application/json" };
     if (auth) h.authorization = auth;
-    const r = await fetch(target, { method: req.method, headers: h, body: req.method === "GET" ? undefined : await req.text() });
+    const body = req.method === "GET" ? undefined : isUpload ? await req.arrayBuffer() : await req.text();
+    const r = await fetch(target, { method: req.method, headers: h, body });
     return new Response(await r.text(), { status: r.status, headers: { "content-type": r.headers.get("content-type") || "application/json", "cache-control": "no-store" } });
   }
   // GET /api/media?u=<https url>  fetches a finished video so the page can trim/store it (needs a valid ArtCraft key)
