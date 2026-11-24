@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Clip Editor</title>
+<link rel="icon" href="/favicon.ico?v=3">
+<style>
+:root{--ink:#14081f;--pink:#ff6de0;--purple:#c66eff;--mint:#6effdb;--yellow:#ffe76e;--bg:#e6e7ec;--white:#fffaf0;--line:#cfd0d8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,Segoe UI,Arial,sans-serif}
+header{background:var(--ink);color:var(--white);padding:12px 20px;border-bottom:4px solid var(--pink);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+header b{letter-spacing:.12em}
+header .k{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+header input{width:250px;padding:7px 9px;border:2px solid var(--purple);background:#221333;color:var(--white);font:inherit}
+header label{font-size:.8rem;opacity:.85}
+.wrap{display:grid;grid-template-columns:320px 1fr;gap:18px;padding:18px;max-width:1500px;margin:0 auto}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}}
+.card{background:var(--white);border:3px solid var(--ink);box-shadow:6px 6px 0 var(--purple);padding:14px;margin-bottom:18px}
+h2{margin:0 0 10px;font-size:.85rem;letter-spacing:.14em;text-transform:uppercase}
+button{border:0;background:var(--ink);color:var(--yellow);padding:9px 13px;font:700 .78rem system-ui;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;margin:4px 6px 0 0}
+button:hover:not(:disabled){background:var(--pink);color:var(--ink)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.alt{background:var(--purple);color:var(--ink)}
+button.ghost{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+input[type=text],input[type=number],select,textarea{width:100%;padding:8px;border:2px solid var(--ink);background:#fff;font:inherit;color:var(--ink)}
+textarea{min-height:110px;resize:vertical}
+label.f{display:block;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin:10px 0 4px}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:120px}
+.lib{display:flex;flex-direction:column;gap:8px;max-height:70vh;overflow:auto}
+.item{display:flex;gap:8px;align-items:center;border:2px solid var(--line);padding:6px;cursor:pointer;background:#fff}
+.item.sel{border-color:var(--pink);box-shadow:3px 3px 0 var(--pink)}
+.item video{width:86px;height:50px;object-fit:cover;background:#000;flex:none}
+.item .t{flex:1;min-width:0}
+.item .n{font-weight:700;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .s{font-size:.72rem;opacity:.8}
+.tag{display:inline-block;font-size:.65rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:1px 5px;margin-right:4px;background:var(--line)}
+.tag.gen{background:var(--mint)}.tag.trim{background:var(--yellow)}.tag.run{background:var(--pink)}.tag.bad{background:#ff8a8a}
+.drop{border:2px dashed var(--ink);padding:14px;text-align:center;font-size:.85rem;margin-bottom:8px;background:#fff}
+.drop.on{background:var(--yellow)}
+.player{background:#000;width:100%;max-height:56vh;display:block}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cmp video{width:100%;background:#000}
+.cmp .cap{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.trim{position:relative;height:38px;margin:12px 0 4px;background:#d9dae2;border:2px solid var(--ink);touch-action:none}
+.trim .sel{position:absolute;top:0;bottom:0;background:rgba(255,109,224,.35);border-left:4px solid var(--pink);border-right:4px solid var(--pink)}
+.trim .ph{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.trim .h{position:absolute;top:0;bottom:0;width:16px;margin-left:-8px;cursor:ew-resize}
+.times{display:flex;justify-content:space-between;font:600 .8rem ui-monospace,Menlo,Consolas,monospace}
+.msg{padding:9px 11px;margin:10px 0 0;font-size:.88rem}
+.msg.ok{background:var(--mint)}.msg.err{background:#ffb3b3}.msg.warn{background:var(--yellow)}.msg.info{background:#ececf2}
+.note{font-size:.82rem;opacity:.85}
+.bar{height:8px;background:#d9dae2;margin-top:8px}.bar i{display:block;height:100%;width:0;background:var(--pink);transition:width .3s}
+.empty{padding:40px;text-align:center;opacity:.7}
+code{background:#ececf2;padding:0 4px}
+</style>
+</head>
+<body>
+<header>
+  <b>TENSEI.EXE · CLIP EDITOR</b>
+  <div class="k">
+    <input id="key" type="password" autocomplete="off" placeholder="ArtCraft API key (artcraft_api_…)">
+    <label><input id="remember" type="checkbox"> remember on this device</label>
+  </div>
+</header>
+
+<div class="wrap">
+<aside>
+  <div class="card">
+    <h2>Library</h2>
+    <div class="drop" id="drop">Drop video files here<br><button id="pick" class="alt">Upload from computer</button><input id="file" type="file" accept="video/*" multiple hidden></div>
+    <div class="row"><input id="link" type="text" placeholder="…or paste a video link (ArtCraft, Bunny…)"></div>
+    <button id="addLink" class="ghost">Add link</button>
+    <div class="lib" id="lib" style="margin-top:10px"></div>
+    <p class="note">Your library is saved in this browser only.</p>
+  </div>
+</aside>
+
+<main>
+  <div class="card" id="editCard">
+    <h2 id="curName">No clip selected</h2>
+    <div id="viewer"><div class="empty">Upload a clip or pick one from the library.</div></div>
+    <div id="trimBox" hidden>
+      <div class="trim" id="trim"><div class="sel" id="tsel"></div><div class="h" id="hin"></div><div class="h" id="hout"></div><div class="ph" id="ph"></div></div>
+      <div class="times"><span>In <span id="tin">0.00</span>s</span><span>Length <span id="tlen">0.00</span>s</span><span>Out <span id="tout">0.00</span>s</span></div>
+      <div>
+        <button id="setIn" class="ghost">Set in here</button><button id="setOut" class="ghost">Set out here</button><button id="playSel" class="ghost">Play selection</button><button id="resetTrim" class="ghost">Reset</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <div><label class="f" for="trimMode">Trim mode</label><select id="trimMode"><option value="exact">Exact (re-encode, slower)</option><option value="fast">Fast (no re-encode, cut snaps to keyframes)</option></select></div>
+      </div>
+      <button id="saveTrim">Save trimmed copy</button><button id="dl" class="ghost">Download</button><button id="cmpBtn" class="ghost" hidden>Compare with original</button><button id="del" class="ghost">Delete from library</button>
+      <div id="trimMsg"></div>
+    </div>
+  </div>
+
+  <div class="card" id="fixCard" hidden>
+    <h2>Fix with a prompt</h2>
+    <p class="note">The trimmed part of this clip is sent to ArtCraft as the reference video, together with your prompt. Seedance makes a new version of the shot. It does not paint over one spot, so describe the whole shot and say what must stay the same.</p>
+    <label class="f" for="prompt">Prompt</label>
+    <textarea id="prompt" placeholder="Same shot as the reference video: same characters, outfits, camera move and timing. Fix: her left hand has six fingers, make it a normal five-finger hand. Keep everything else identical."></textarea>
+    <div class="row">
+      <div><label class="f" for="model">Model</label><select id="model"><option value="seedance_2p5">Seedance 2.5</option><option value="seedance_2p0">Seedance 2.0</option><option value="__custom">Other (type the name)</option></select><input id="modelCustom" type="text" placeholder="model name" hidden style="margin-top:6px"></div>
+      <div><label class="f" for="dur">Length (seconds)</label><input id="dur" type="number" min="2" max="30" step="1" value="5"></div>
+      <div><label class="f" for="ar">Aspect ratio</label><select id="ar"><option value="wide_sixteen_by_nine">16:9 wide</option><option value="tall_nine_by_sixteen">9:16 tall</option><option value="square">1:1 square</option></select></div>
+      <div><label class="f" for="res">Resolution</label><select id="res"><option value="seven_twenty_p">720p</option><option value="ten_eighty_p">1080p</option><option value="four_eighty_p">480p</option></select></div>
+    </div>
+    <div class="row">
+      <div><label class="f"><input id="audio" type="checkbox" checked> Generate audio</label></div>
+      <div><label class="f">Extra reference images (optional)</label><input id="refImgs" type="file" accept="image/png,image/jpeg,image/webp" multiple></div>
+    </div>
+    <button id="check" class="ghost">Check model (free)</button><button id="gen">Generate fix</button>
+    <div id="fixMsg"></div><div class="bar" id="genBar" hidden><i></i></div>
+  </div>
+</main>
+</div>
+
+<script src="/vendor/ffmpeg/ffmpeg.js"></script>
+<script src="/vendor/ffmpeg/util.js"></script>
+<script>
+(function(){
+"use strict";
+var $=function(s){return document.querySelector(s)};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+function msg(el,cls,t){$(el).innerHTML=t?'<div class="msg '+cls+'">'+t+'</div>':""}
+function uuid(){return crypto.randomUUID?crypto.randomUUID():"10000000-1000-4000-8000-100000000000".replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16)})}
+
+/* ---------- key (stays in this browser) ---------- */
+var LS=null;try{LS=window.localStorage}catch(e){}
+var SS=null;try{SS=window.sessionStorage}catch(e){}
+try{var k0=(LS&&LS.getItem("ac_key"))||(SS&&SS.getItem("ac_key"))||"";$("#key").value=k0;$("#remember").checked=!!(LS&&LS.getItem("ac_key"))}catch(e){}
+function saveKey(){var k=$("#key").value.trim();try{if(SS)SS.setItem("ac_key",k);if(LS){if($("#remember").checked)LS.setItem("ac_key",k);else LS.removeItem("ac_key")}}catch(e){}}
+$("#key").addEventListener("change",saveKey);$("#remember").addEventListener("change",saveKey);
+function key(){var k=$("#key").value.trim();if(!k)throw new Error("Paste your ArtCraft API key at the top first.");return /^(Bearer|Key) /.test(k)?k:"Bearer "+k}
+
+/* ---------- library in IndexedDB ---------- */
+var db=null,ITEMS=[],CUR=null,URLS={};
+function openDb(){return new Promise(function(res,rej){var r=indexedDB.open("clip-editor",1);r.onupgradeneeded=function(){r.result.createObjectStore("items",{keyPath:"id"})};r.onsuccess=function(){db=r.result;res()};r.onerror=function(){rej(r.error)}})}
+function tx(mode){return db.transaction("items",mode).objectStore("items")}
+function put(it){return new Promise(function(res,rej){var q=tx("readwrite").put(it);q.onsuccess=function(){res()};q.onerror=function(){rej(q.error)}})}
+function delItem(id){return new Promise(function(res){var q=tx("readwrite").delete(id);q.onsuccess=function(){res()};q.onerror=function(){res()}})}
+function all(){return new Promise(function(res){var q=tx("readonly").getAll();q.onsuccess=function(){res(q.result||[])};q.onerror=function(){res([])}})}
+function src(it){if(it.blob){if(!URLS[it.id])URLS[it.id]=URL.createObjectURL(it.blob);return URLS[it.id]}return it.url||""}
+function byId(id){return ITEMS.filter(function(x){return x.id===id})[0]}
+async function addItem(it){it.id=it.id||uuid();it.created=it.created||Date.now();await put(it);ITEMS.unshift(it);render();return it}
+async function update(it){await put(it);render()}
+
+function render(){
+  ITEMS.sort(function(a,b){return b.created-a.created});
+  $("#lib").innerHTML=ITEMS.length?ITEMS.map(function(it){
+    var tag=it.kind==="gen"?(it.status==="done"?'<span class="tag gen">fixed</span>':it.status==="failed"?'<span class="tag bad">failed</span>':'<span class="tag run">generating '+(it.progress||0)+'%</span>'):it.kind==="trim"?'<span class="tag trim">trim</span>':'<span class="tag">'+esc(it.kind)+'</span>';
+    var v=src(it);
+    return '<div class="item'+(CUR&&CUR.id===it.id?" sel":"")+'" data-id="'+it.id+'">'+(v?'<video muted preload="metadata" src="'+esc(v)+'#t=0.1"></video>':'<video></video>')+'<div class="t"><div class="n">'+esc(it.name)+'</div><div class="s">'+tag+new Date(it.created).toLocaleString()+'</div></div></div>';
+  }).join(""):'<div class="note">Nothing here yet.</div>';
+  Array.prototype.forEach.call(document.querySelectorAll(".item"),function(el){el.onclick=function(){select(el.getAttribute("data-id"))}});
+}
+
+/* ---------- adding clips ---------- */
+async function addFiles(files){
+  for(var i=0;i<files.length;i++){var f=files[i];if(!/^video\//.test(f.type)&&!/\.(mp4|mov|webm|m4v)$/i.test(f.name))continue;
+    var it=await addItem({kind:"upload",name:f.name,blob:f});if(i===0)select(it.id)}
+}
+$("#pick").onclick=function(){$("#file").click()};
+$("#file").onchange=function(){addFiles(this.files);this.value=""};
+var dz=$("#drop");
+dz.addEventListener("dragover",function(e){e.preventDefault();dz.classList.add("on")});
+dz.addEventListener("dragleave",function(){dz.classList.remove("on")});
+dz.addEventListener("drop",function(e){e.preventDefault();dz.classList.remove("on");addFiles(e.dataTransfer.files)});
+$("#addLink").onclick=async function(){
+  var u=$("#link").value.trim();if(!/^https:\/\//.test(u)){alert("Paste an https:// link to a video file.");return}
+  var it=await addItem({kind:"link",name:u.split("/").pop().split("?")[0]||"linked video",url:u});$("#link").value="";select(it.id);
+};
+
+/* ---------- getting the bytes of a clip (for trimming / uploading) ---------- */
+async function bytesOf(it){
+  if(it.blob)return it.blob;
+  try{var r=await fetch(it.url);if(r.ok)return await r.blob()}catch(e){}
+  var r2=await fetch("/api/media?u="+encodeURIComponent(it.url),{headers:{authorization:key()}});
+  if(!r2.ok){var j={};try{j=await r2.json()}catch(e){}throw new Error("Could not download the clip: "+(j.error||r2.status))}
+  return await r2.blob();
+}
+
+/* ---------- viewer + trim ---------- */
+var V=null,TIN=0,TOUT=0,DUR=0;
+function select(id){
+  var it=byId(id);if(!it)return;CUR=it;render();
+  $("#curName").textContent=it.name;msg("#trimMsg","","");msg("#fixMsg","","");
+  var s=src(it);
+  if(!s){$("#viewer").innerHTML='<div class="empty">'+(it.status==="failed"?"This generation failed: "+esc(it.error||""):"Still generating… "+(it.progress||0)+"%")+'</div>';$("#trimBox").hidden=true;$("#fixCard").hidden=true;return}
+  $("#viewer").innerHTML='<video class="player" id="v" controls playsinline src="'+esc(s)+'"></video>';
+  V=$("#v");$("#trimBox").hidden=false;$("#fixCard").hidden=false;$("#cmpBtn").hidden=!it.parent||!byId(it.parent);
+  V.onloadedmetadata=function(){DUR=V.duration||0;TIN=0;TOUT=DUR;drawTrim();
+    var w=V.videoWidth,h=V.videoHeight;if(w&&h)$("#ar").value=Math.abs(w/h-1)<.1?"square":(w>h?"wide_sixteen_by_nine":"tall_nine_by_sixteen");
+    syncDur()};
+  V.ontimeupdate=function(){drawTrim();if(playingSel&&V.currentTime>=TOUT){V.pause();playingSel=false}};
+}
+function syncDur(){var L=Math.max(2,Math.min(30,Math.round(TOUT-TIN)||5));$("#dur").value=L}
+function drawTrim(){
+  if(!DUR)return;var pct=function(t){return (100*t/DUR)+"%"};
+  $("#tsel").style.left=pct(TIN);$("#tsel").style.width=(100*(TOUT-TIN)/DUR)+"%";
+  $("#hin").style.left=pct(TIN);$("#hout").style.left=pct(TOUT);$("#ph").style.left=pct(V?V.currentTime:0);
+  $("#tin").textContent=TIN.toFixed(2);$("#tout").textContent=TOUT.toFixed(2);$("#tlen").textContent=(TOUT-TIN).toFixed(2);
+}
+function dragHandle(h,which){
+  h.addEventListener("pointerdown",function(e){e.preventDefault();h.setPointerCapture(e.pointerId);
+    function mv(ev){var r=$("#trim").getBoundingClientRect(),t=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width))*DUR;
+      if(which==="in")TIN=Math.min(t,TOUT-0.1);else TOUT=Math.max(t,TIN+0.1);if(V)V.currentTime=which==="in"?TIN:TOUT;drawTrim()}
+    function up(){h.removeEventListener("pointermove",mv);h.removeEventListener("pointerup",up);syncDur()}
+    h.addEventListener("pointermove",mv);h.addEventListener("pointerup",up)});
+}
+dragHandle($("#hin"),"in");dragHandle($("#hout"),"out");
+$("#trim").addEventListener("pointerdown",function(e){if(e.target!==this&&e.target.id!=="tsel"&&e.target.id!=="ph")return;var r=this.getBoundingClientRect();if(V)V.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*DUR});
+$("#setIn").onclick=function(){if(V){TIN=Math.min(V.currentTime,TOUT-0.1);drawTrim();syncDur()}};
+$("#setOut").onclick=function(){if(V){TOUT=Math.max(V.currentTime,TIN+0.1);drawTrim();syncDur()}};
+$("#resetTrim").onclick=function(){TIN=0;TOUT=DUR;drawTrim();syncDur()};
+var playingSel=false;$("#playSel").onclick=function(){if(!V)return;V.currentTime=TIN;playingSel=true;V.play()};
+function trimmed(){return DUR&&(TIN>0.05||TOUT<DUR-0.05)}
+
+/* ---------- ffmpeg (loaded on first use) ---------- */
+var FF=null;
+async function ff(onlog){
+  if(FF)return FF;
+  var f=new FFmpegWASM.FFmpeg(),base="https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+  await f.load({coreURL:await FFmpegUtil.toBlobURL(base+"/ffmpeg-core.js","text/javascript"),wasmURL:await FFmpegUtil.toBlobURL(base+"/ffmpeg-core.wasm","application/wasm")});
+  FF=f;return f;
+}
+async function doTrim(blob,a,b,mode,status){
+  status("Loading the trimming tool (first time only, about 30 MB)…");
+  var f=await ff();
+  var onp=function(e){status("Trimming… "+Math.max(0,Math.min(100,Math.round((e.progress||0)*100)))+"%")};f.on("progress",onp);
+  try{
+    await f.writeFile("in.mp4",new Uint8Array(await blob.arrayBuffer()));
+    var args=mode==="fast"?["-ss",a.toFixed(3),"-i","in.mp4","-t",(b-a).toFixed(3),"-c","copy","-avoid_negative_ts","make_zero","-movflags","+faststart","out.mp4"]
+      :["-ss",a.toFixed(3),"-i","in.mp4","-t",(b-a).toFixed(3),"-c:v","libx264","-preset","veryfast","-crf","18","-pix_fmt","yuv420p","-c:a","aac","-b:a","192k","-movflags","+faststart","out.mp4"];
+    var rc=await f.exec(args);if(rc!==0)throw new Error("ffmpeg could not trim this file (code "+rc+")");
+    var out=await f.readFile("out.mp4");
+    return new Blob([out.buffer],{type:"video/mp4"});
+  }finally{f.off("progress",onp);try{await f.deleteFile("in.mp4")}catch(e){}try{await f.deleteFile("out.mp4")}catch(e){}}
+}
+$("#saveTrim").onclick=async function(){
+  if(!CUR)return;if(!trimmed()){msg("#trimMsg","warn","Move the in or out handle first.");return}
+  var b=this;b.disabled=true;
+  try{
+    var blob=await bytesOf(CUR);
+    var out=await doTrim(blob,TIN,TOUT,$("#trimMode").value,function(t){msg("#trimMsg","info",t)});
+    var it=await addItem({kind:"trim",name:CUR.name.replace(/\.(mp4|mov|webm|m4v)$/i,"")+" ["+TIN.toFixed(1)+"-"+TOUT.toFixed(1)+"s].mp4",blob:out,parent:CUR.id});
+    select(it.id);msg("#trimMsg","ok","Saved as a new clip in your library ("+(out.size/1048576).toFixed(1)+" MB).");
+  }catch(e){msg("#trimMsg","err",esc(e.message||e))}
+  b.disabled=false;
+};
+$("#dl").onclick=async function(){
+  if(!CUR)return;try{var blob=await bytesOf(CUR);var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=/\.mp4$/i.test(CUR.name)?CUR.name:CUR.name+".mp4";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},5000)}catch(e){msg("#trimMsg","err",esc(e.message))}
+};
+$("#del").onclick=async function(){if(!CUR||!confirm("Delete “"+CUR.name+"” from your library? This can't be undone."))return;await delItem(CUR.id);ITEMS=ITEMS.filter(function(x){return x.id!==CUR.id});CUR=null;$("#viewer").innerHTML='<div class="empty">Pick a clip from the library.</div>';$("#trimBox").hidden=true;$("#fixCard").hidden=true;$("#curName").textContent="No clip selected";render()};
+$("#cmpBtn").onclick=function(){
+  var p=byId(CUR.parent);if(!p)return;
+  $("#viewer").innerHTML='<div class="cmp"><div><div class="cap">Original</div><video id="va" playsinline muted preload="auto" src="'+esc(src(p))+'#t=0.05"></video></div><div><div class="cap">'+esc(CUR.kind==="gen"?"Fixed":"This clip")+'</div><video id="vb" playsinline preload="auto" src="'+esc(src(CUR))+'#t=0.05"></video></div></div><button id="cmpPlay">Play both</button><button id="cmpBack" class="ghost">Back to editing</button>';
+  $("#trimBox").hidden=true;$("#fixCard").hidden=true;V=null;
+  $("#cmpPlay").onclick=function(){var a=$("#va"),b=$("#vb");a.currentTime=0;b.currentTime=0;a.play();b.play()};
+  $("#cmpBack").onclick=function(){select(CUR.id)};
+};
+
+/* ---------- ArtCraft ---------- */
+$("#model").onchange=function(){$("#modelCustom").hidden=this.value!=="__custom"};
+function model(){var m=$("#model").value;return m==="__custom"?$("#modelCustom").value.trim():m}
+async function ac(path,body){
+  var r=await fetch("/api/ac/v1/omni_api/"+path,{method:body?"POST":"GET",headers:{authorization:key(),"content-type":"application/json"},body:body?JSON.stringify(body):undefined});
+  var t=await r.text(),j=null;try{j=JSON.parse(t)}catch(e){}
+  return {status:r.status,json:j,text:t};
+}
+function errText(r){var j=r.json;return (j&&(j.error_reason||j.error||j.message||j.error_message))||r.text||("HTTP "+r.status)}
+$("#check").onclick=async function(){
+  var m=model();if(!m){msg("#fixMsg","warn","Type a model name first.");return}
+  try{
+    msg("#fixMsg","info","Asking ArtCraft about “"+esc(m)+"” (deliberately incomplete request, no video is made)…");
+    var r=await ac("generate/video",{model:m,aspect_ratio:"__check__",idempotency_token:uuid()});
+    var t=String(errText(r));
+    if(r.status===401)return msg("#fixMsg","err","ArtCraft did not accept your API key. "+esc(t));
+    if(r.status<300)return msg("#fixMsg","warn","Unexpected: ArtCraft accepted the test request. Check your ArtCraft jobs. "+esc(t.slice(0,300)));
+    var bad=t.indexOf(m)>=0||/model/i.test(t)&&!/aspect/i.test(t);
+    msg("#fixMsg",bad?"err":"ok",(bad?"ArtCraft does <b>not</b> accept “"+esc(m)+"” through the API yet.":"ArtCraft <b>accepts</b> “"+esc(m)+"”. (It only complained about the deliberately wrong setting.)")+'<br><span class="note">ArtCraft said: '+esc(t.slice(0,600))+'</span>');
+  }catch(e){msg("#fixMsg","err",esc(e.message||e))}
+};
+async function uploadClip(blob,ext){
+  var r=await fetch("/api/clip?ext="+ext,{method:"POST",headers:{authorization:key(),"content-type":blob.type||"application/octet-stream"},body:blob});
+  var j={};try{j=await r.json()}catch(e){}
+  if(!r.ok)throw new Error(j.error||("upload failed ("+r.status+")"));return j.url;
+}
+$("#gen").onclick=async function(){
+  if(!CUR)return;var p=$("#prompt").value.trim(),m=model();
+  if(!p){msg("#fixMsg","warn","Write a prompt first.");return}
+  if(!m){msg("#fixMsg","warn","Choose a model.");return}
+  var len=TOUT-TIN,dur=Math.max(2,Math.min(30,parseInt($("#dur").value,10)||5));
+  if(len>15.05&&!confirm("The reference part is "+len.toFixed(1)+"s long. Seedance may reject reference videos longer than 15 seconds. Continue anyway?"))return;
+  if(!confirm("Generate a "+dur+"s fix with "+m+"? This uses your ArtCraft credits (Seedance 2.0 is about 16 credits per second; 2.5 may differ)."))return;
+  var b=this;b.disabled=true;$("#genBar").hidden=false;$("#genBar i").style.width="5%";
+  var parent=CUR;
+  try{
+    key();
+    var blob=await bytesOf(parent);
+    if(trimmed())blob=await doTrim(blob,TIN,TOUT,"exact",function(t){msg("#fixMsg","info",t)});
+    if(blob.size>25*1048576)throw new Error("The clip is "+(blob.size/1048576).toFixed(1)+" MB; the limit is 25 MB. Trim it shorter.");
+    msg("#fixMsg","info","Uploading the reference clip…");$("#genBar i").style.width="15%";
+    var vurl=await uploadClip(blob,"mp4"),imgs=[];
+    var fl=$("#refImgs").files;
+    for(var i=0;i<fl.length;i++){var ext=/png/.test(fl[i].type)?"png":/webp/.test(fl[i].type)?"webp":"jpg";imgs.push(await uploadClip(fl[i],ext))}
+    msg("#fixMsg","info","Sending to ArtCraft…");$("#genBar i").style.width="25%";
+    var body={model:m,idempotency_token:uuid(),prompt:p,duration_seconds:dur,aspect_ratio:$("#ar").value,resolution:$("#res").value,generate_audio:$("#audio").checked,reference_video_urls:[vurl]};
+    if(imgs.length)body.reference_image_urls=imgs;
+    var r=await ac("generate/video",body);
+    if(r.status>=300||!r.json)throw new Error(r.status===402?"Not enough ArtCraft credits.":"ArtCraft refused the request: "+String(errText(r)).slice(0,500));
+    var tok=r.json.inference_job_token||(r.json.all_job_tokens&&r.json.all_job_tokens[0]);
+    if(!tok)throw new Error("ArtCraft did not return a job id: "+r.text.slice(0,300));
+    var it=await addItem({kind:"gen",name:parent.name.replace(/\.(mp4|mov|webm|m4v)$/i,"")+" · fix",parent:parent.id,prompt:p,model:m,job:tok,status:"running",progress:0,ref:vurl});
+    msg("#fixMsg","ok","Sent. ArtCraft is generating it now. It appears in your library as “"+esc(it.name)+"” and fills in when it's done. You can keep working meanwhile.");
+    poll();
+  }catch(e){msg("#fixMsg","err",esc(e.message||e))}
+  b.disabled=false;$("#genBar").hidden=true;
+};
+
+/* ---------- job polling (resumes after reload) ---------- */
+var polling=false;
+function pick(o,path){return path.split(".").reduce(function(a,k){return a&&a[k]},o)}
+async function poll(){
+  if(polling)return;polling=true;
+  try{
+    while(true){
+      var run=ITEMS.filter(function(x){return x.kind==="gen"&&x.status==="running"});if(!run.length)break;
+      if(!$("#key").value.trim())break;
+      for(var i=0;i<run.length;i++){var it=run[i];
+        var r=await ac("job_status/job/"+encodeURIComponent(it.job));if(r.status===401)return;
+        var st=r.json&&(r.json.state||r.json.job_state||r.json);if(!st)continue;
+        var s=pick(st,"status.status")||st.status;
+        it.progress=pick(st,"status.progress_percentage")||it.progress||0;
+        if(s==="complete_success"){
+          var u=pick(st,"maybe_result.media_links.cdn_url")||pick(st,"maybe_result.cdn_url");
+          it.url=u;it.status="done";it.progress=100;
+          try{it.blob=await bytesOf({url:u})}catch(e){}
+          await update(it);if(CUR&&CUR.id===it.id)select(it.id);
+        }else if(/complete_failure|dead|cancelled/.test(String(s))){
+          it.status="failed";it.error=pick(st,"status.maybe_failure_category")||pick(st,"status.maybe_extra_status_description")||s;await update(it);if(CUR&&CUR.id===it.id)select(it.id);
+        }else{await update(it);if(CUR&&CUR.id===it.id&&!src(it))select(it.id)}
+      }
+      await new Promise(function(x){setTimeout(x,6000)});
+    }
+  }finally{polling=false}
+}
+$("#key").addEventListener("change",poll);
+
+openDb().then(all).then(function(list){ITEMS=list;render();poll()}).catch(function(e){$("#lib").innerHTML='<div class="msg err">This browser blocked local storage, so the library cannot be saved: '+esc(e&&e.message||e)+'</div>'});
+})();
+</script>
+</body>
+</html>

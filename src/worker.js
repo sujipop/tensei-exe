@@ -55,9 +55,73 @@ async function api(req, env, url) {
   return J({ error: "not found" }, 404);
 }
 
+/* ---------- video editor: ArtCraft pass-through + temporary clip hosting (KV, auto-deleted) ---------- */
+const AC = "https://api.storyteller.ai";
+const okKeys = new Map(); // hash(key) -> time it was confirmed valid (per isolate, never stored)
+async function keyOk(auth) {
+  if (!/^(Bearer |Key )?artcraft_api_[a-z0-9]{20,80}$/i.test(auth || "")) return false;
+  const h = await hash(auth), t = okKeys.get(h);
+  if (t && Date.now() - t < 600000) return true;
+  const r = await fetch(AC + "/v1/omni_api/job_status/job/jinf_check", { headers: { authorization: auth } });
+  if (r.status === 401 || r.status === 403) return false;
+  okKeys.set(h, Date.now()); return true;
+}
+const CT = { mp4: "video/mp4", mov: "video/quicktime", png: "image/png", jpg: "image/jpeg", webp: "image/webp", mp3: "audio/mpeg", wav: "audio/wav" };
+async function editorApi(req, env, url) {
+  const p = url.pathname;
+  // GET /api/clip/<id>.<ext>  public, so ArtCraft can fetch the clip
+  let m = p.match(/^\/api\/clip\/([a-f0-9]{32})\.(mp4|mov|png|jpg|webp|mp3|wav)$/);
+  if (m && (req.method === "GET" || req.method === "HEAD")) {
+    if (!env.CLIPS) return J({ error: "no storage" }, 503);
+    const v = await env.CLIPS.get(m[1], { type: "arrayBuffer" });
+    if (!v) return new Response("not found", { status: 404 });
+    return new Response(req.method === "HEAD" ? null : v, { headers: { "content-type": CT[m[2]], "content-length": String(v.byteLength), "cache-control": "public, max-age=3600", "access-control-allow-origin": "*", "x-robots-tag": "noindex" } });
+  }
+  const auth = req.headers.get("authorization") || "";
+  // POST /api/clip?ext=mp4  body = file bytes, needs a valid ArtCraft key; kept 3 days
+  if (p === "/api/clip" && req.method === "POST") {
+    if (!env.CLIPS) return J({ error: "no storage" }, 503);
+    const ext = url.searchParams.get("ext") || "mp4";
+    if (!CT[ext]) return J({ error: "unsupported file type" }, 400);
+    if (!(await keyOk(auth))) return J({ error: "ArtCraft key not accepted" }, 401);
+    const len = Number(req.headers.get("content-length") || 0);
+    if (len > 25 * 1024 * 1024) return J({ error: "File too big (max 25 MB). Trim it shorter." }, 413);
+    const buf = await req.arrayBuffer();
+    if (!buf.byteLength || buf.byteLength > 25 * 1024 * 1024) return J({ error: "File empty or too big (max 25 MB)." }, 413);
+    const id = [...crypto.getRandomValues(new Uint8Array(16))].map(x => x.toString(16).padStart(2, "0")).join("");
+    await env.CLIPS.put(id, buf, { expirationTtl: 3 * 86400 });
+    return J({ url: url.origin + "/api/clip/" + id + "." + ext });
+  }
+  // /api/ac/v1/omni_api/...  forwards to ArtCraft with your key (key is not stored)
+  if (p.startsWith("/api/ac/v1/omni_api/")) {
+    const target = AC + p.slice(7) + url.search;
+    const r = await fetch(target, { method: req.method, headers: { authorization: auth, "content-type": "application/json", accept: "application/json" }, body: req.method === "GET" ? undefined : await req.text() });
+    return new Response(await r.text(), { status: r.status, headers: { "content-type": r.headers.get("content-type") || "application/json", "cache-control": "no-store" } });
+  }
+  // GET /api/media?u=<https url>  fetches a finished video so the page can trim/store it (needs a valid ArtCraft key)
+  if (p === "/api/media" && req.method === "GET") {
+    const u = url.searchParams.get("u") || "";
+    let t; try { t = new URL(u) } catch { return J({ error: "bad url" }, 400) }
+    if (t.protocol !== "https:") return J({ error: "https only" }, 400);
+    if (!(await keyOk(auth))) return J({ error: "ArtCraft key not accepted" }, 401);
+    const r = await fetch(t.toString(), { redirect: "follow" });
+    const ct = r.headers.get("content-type") || "";
+    if (!r.ok) return J({ error: "source returned " + r.status }, 502);
+    if (!/^(video|image|audio)\/|octet-stream/.test(ct)) return J({ error: "not a media file" }, 415);
+    const n = Number(r.headers.get("content-length") || 0);
+    if (n > 200 * 1024 * 1024) return J({ error: "file too big" }, 413);
+    return new Response(r.body, { headers: { "content-type": ct, "cache-control": "no-store" } });
+  }
+  return null;
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
+    if (url.pathname.startsWith("/api/clip") || url.pathname.startsWith("/api/ac/") || url.pathname === "/api/media") {
+      try { const r = await editorApi(req, env, url); if (r) return r } catch (e) { return J({ error: "server error: " + String(e && e.message || e).slice(0, 200) }, 500) }
+      return J({ error: "not found" }, 404);
+    }
     if (url.pathname.startsWith("/api/")) {
       try { return await api(req, env, url) } catch (e) { return J({ error: "server error" }, 500) }
     }
