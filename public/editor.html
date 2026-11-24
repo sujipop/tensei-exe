@@ -53,6 +53,15 @@ label.f{display:block;font-size:.72rem;letter-spacing:.12em;text-transform:upper
 .bar{height:8px;background:#d9dae2;margin-top:8px}.bar i{display:block;height:100%;width:0;background:var(--pink);transition:width .3s}
 .empty{padding:40px;text-align:center;opacity:.7}
 code{background:#ececf2;padding:0 4px}
+.pbox{position:relative}.pbox.on textarea{background:var(--yellow);border-style:dashed}
+.refs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;min-height:20px}
+.ref{position:relative;width:92px;border:2px solid var(--ink);background:#fff;cursor:grab;user-select:none}
+.ref.drag{opacity:.35}.ref.over{outline:3px solid var(--pink)}
+.ref img{display:block;width:100%;height:70px;object-fit:cover;pointer-events:none}
+.ref .lb{display:block;font:800 .72rem ui-monospace,Menlo,Consolas,monospace;text-align:center;background:var(--purple);color:var(--ink);padding:2px 0;cursor:pointer}
+.ref .x{position:absolute;top:2px;right:2px;width:20px;height:20px;margin:0;padding:0;font-size:.8rem;line-height:20px;background:var(--ink);color:var(--white)}
+.ref .mv{display:flex}.ref .mv button{flex:1;margin:0;padding:2px 0;font-size:.7rem;background:#ececf2;color:var(--ink)}
+.tags{font-size:.8rem;margin-top:6px}.tags .ok{background:var(--mint);padding:0 4px;margin-right:4px}.tags .no{background:#ffb3b3;padding:0 4px;margin-right:4px}
 </style>
 </head>
 <body>
@@ -98,16 +107,19 @@ code{background:#ececf2;padding:0 4px}
     <h2>Fix with a prompt</h2>
     <p class="note">The trimmed part of this clip is sent to ArtCraft as the reference video, together with your prompt. Seedance makes a new version of the shot. It does not paint over one spot, so describe the whole shot and say what must stay the same.</p>
     <label class="f" for="prompt">Prompt</label>
-    <textarea id="prompt" placeholder="Same shot as the reference video: same characters, outfits, camera move and timing. Fix: her left hand has six fingers, make it a normal five-finger hand. Keep everything else identical."></textarea>
+    <div class="pbox" id="pbox"><textarea id="prompt" placeholder="@Video1 is the shot to fix. Keep the same characters, outfits, camera move and timing. Fix: her left hand has six fingers, make it a normal five-finger hand, like in @Image1. Keep everything else identical."></textarea></div>
+    <p class="note" style="margin:4px 0 0">Your trimmed clip is <b>@Video1</b>. Drop or paste photos onto the prompt box to add them as <b>@Image1, @Image2…</b> (the tag goes where your cursor is). Click a photo's tag to insert it. Drag photos (or use ◀ ▶) to change their order; the tags in your prompt follow their photos.</p>
+    <div class="refs" id="refs"></div>
+    <div><button id="addImg" class="ghost">Add photos</button><input id="refImgs" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden></div>
+    <div class="tags" id="tags"></div>
     <div class="row">
       <div><label class="f" for="model">Model</label><select id="model"><option value="seedance_2p5">Seedance 2.5</option><option value="seedance_2p0">Seedance 2.0</option><option value="__custom">Other (type the name)</option></select><input id="modelCustom" type="text" placeholder="model name" hidden style="margin-top:6px"></div>
       <div><label class="f" for="dur">Length (seconds)</label><input id="dur" type="number" min="2" max="30" step="1" value="5"></div>
-      <div><label class="f" for="ar">Aspect ratio</label><select id="ar"><option value="auto">Auto (match reference)</option><option value="wide_sixteen_by_nine">16:9 wide</option><option value="tall_nine_by_sixteen">9:16 tall</option><option value="square">1:1 square</option><option value="wide_twenty_one_by_nine">21:9 wide</option><option value="wide_four_by_three">4:3 wide</option><option value="wide_three_by_two">3:2 wide</option><option value="tall_three_by_four">3:4 tall</option><option value="tall_four_by_five">4:5 tall</option><option value="tall_two_by_three">2:3 tall</option></select></div>
+      <div><label class="f" for="ar">Aspect ratio</label><select id="ar"><option value="wide_sixteen_by_nine">16:9 wide</option><option value="tall_nine_by_sixteen">9:16 tall</option><option value="square">1:1 square</option><option value="wide_twenty_one_by_nine">21:9 wide</option><option value="wide_four_by_three">4:3 wide</option><option value="wide_three_by_two">3:2 wide</option><option value="tall_three_by_four">3:4 tall</option><option value="tall_four_by_five">4:5 tall</option><option value="tall_two_by_three">2:3 tall</option><option value="auto">Auto (Seedance decides)</option></select></div>
       <div><label class="f" for="res">Resolution</label><select id="res"><option value="seven_twenty_p">720p</option><option value="ten_eighty_p">1080p</option><option value="four_eighty_p">480p</option></select></div>
     </div>
     <div class="row">
       <div><label class="f"><input id="audio" type="checkbox" checked> Generate audio</label></div>
-      <div><label class="f">Extra reference images (optional)</label><input id="refImgs" type="file" accept="image/png,image/jpeg,image/webp" multiple></div>
     </div>
     <button id="check" class="ghost">Check model (free)</button><button id="gen">Generate fix</button>
     <div id="fixMsg"></div><div class="bar" id="genBar" hidden><i></i></div>
@@ -209,10 +221,13 @@ function select(id){
   $("#viewer").innerHTML='<video class="player" id="v" controls playsinline src="'+esc(s)+'"></video>';
   V=$("#v");V.onerror=function(){msg("#trimMsg","err","This link doesn't play as a video. It may be a web page rather than the video file itself. For ArtCraft, paste the getartcraft.com/media/… link and it will be looked up.")};
   $("#trimBox").hidden=false;$("#fixCard").hidden=false;$("#cmpBtn").hidden=!it.parent||!byId(it.parent);
-  V.onloadedmetadata=function(){DUR=V.duration||0;TIN=0;TOUT=DUR;drawTrim();
+  V.onloadedmetadata=function(){DUR=V.duration||0;TIN=0;TOUT=DUR;drawTrim();matchAspect(V.videoWidth,V.videoHeight);
     syncDur()};
   V.ontimeupdate=function(){drawTrim();if(playingSel&&V.currentTime>=TOUT){V.pause();playingSel=false}};
 }
+/* pick the supported aspect ratio closest to the clip's own shape */
+var RATIOS={square:1,wide_sixteen_by_nine:16/9,tall_nine_by_sixteen:9/16,wide_twenty_one_by_nine:21/9,wide_four_by_three:4/3,wide_three_by_two:3/2,tall_three_by_four:3/4,tall_four_by_five:4/5,tall_two_by_three:2/3};
+function matchAspect(w,h){if(!w||!h)return;var r=w/h,best="",bd=9;for(var k in RATIOS){var d=Math.abs(Math.log(r/RATIOS[k]));if(d<bd){bd=d;best=k}}if(best)$("#ar").value=best}
 function syncDur(){var L=Math.max(2,Math.min(30,Math.round(TOUT-TIN)||5));$("#dur").value=L}
 function drawTrim(){
   if(!DUR)return;var pct=function(t){return (100*t/DUR)+"%"};
@@ -279,6 +294,63 @@ $("#cmpBtn").onclick=function(){
   $("#cmpBack").onclick=function(){select(CUR.id)};
 };
 
+/* ---------- reference photos: @Image1, @Image2… follow their photo when reordered ---------- */
+var REFS=[];/* {id, file, url} in order; @ImageN = REFS[N-1] */
+var TAG=/@image(\d+)\b/gi;
+function addRefs(files,insertAtCursor){
+  var added=[];
+  for(var i=0;i<files.length;i++){var f=files[i];if(!/^image\/(png|jpeg|webp)$/.test(f.type))continue;if(REFS.length>=30){alert("Seedance takes at most 30 reference photos.");break}
+    var r={id:uuid(),file:f,url:URL.createObjectURL(f)};REFS.push(r);added.push(REFS.length)}
+  if(insertAtCursor&&added.length)insertText(added.map(function(n){return "@Image"+n}).join(" "));
+  drawRefs();
+}
+function insertText(t){var ta=$("#prompt"),a=ta.selectionStart==null?ta.value.length:ta.selectionStart,b=ta.selectionEnd==null?a:ta.selectionEnd;
+  var pre=ta.value.slice(0,a),post=ta.value.slice(b);var sp1=pre&&!/\s$/.test(pre)?" ":"",sp2=post&&!/^\s/.test(post)?" ":"";
+  ta.value=pre+sp1+t+sp2+post;var c=(pre+sp1+t+sp2).length;ta.focus();ta.setSelectionRange(c,c);drawTags()}
+/* reorder/remove: rewrite the prompt's tags so each still points at the same photo */
+function remap(oldOrder){
+  var pos={};REFS.forEach(function(r,i){pos[r.id]=i+1});
+  var ta=$("#prompt");ta.value=ta.value.replace(TAG,function(m,n){var r=oldOrder[+n-1];if(!r)return m;return pos[r.id]?"@Image"+pos[r.id]:"(removed photo)"});
+  drawRefs();
+}
+function move(i,j){if(j<0||j>=REFS.length||i===j)return;var old=REFS.slice();var r=REFS.splice(i,1)[0];REFS.splice(j,0,r);remap(old)}
+function drawRefs(){
+  $("#refs").innerHTML=REFS.map(function(r,i){return '<div class="ref" draggable="true" data-i="'+i+'"><img src="'+r.url+'" alt=""><button class="x" data-x="'+i+'" title="Remove">✕</button><span class="lb" data-t="'+(i+1)+'" title="Insert this tag in the prompt">@Image'+(i+1)+'</span><div class="mv"><button data-l="'+i+'">◀</button><button data-r="'+i+'">▶</button></div></div>'}).join("");
+  Array.prototype.forEach.call(document.querySelectorAll(".ref"),function(el){
+    var i=+el.getAttribute("data-i");
+    el.addEventListener("dragstart",function(e){e.dataTransfer.setData("text/x-ref",String(i));e.dataTransfer.effectAllowed="move";el.classList.add("drag")});
+    el.addEventListener("dragend",function(){el.classList.remove("drag")});
+    el.addEventListener("dragover",function(e){if(e.dataTransfer.types.indexOf("text/x-ref")>=0){e.preventDefault();el.classList.add("over")}});
+    el.addEventListener("dragleave",function(){el.classList.remove("over")});
+    el.addEventListener("drop",function(e){var f=e.dataTransfer.getData("text/x-ref");if(f==="")return;e.preventDefault();e.stopPropagation();el.classList.remove("over");move(+f,i)});
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".ref [data-x]"),function(b){b.onclick=function(){var old=REFS.slice(),r=REFS.splice(+b.getAttribute("data-x"),1)[0];URL.revokeObjectURL(r.url);remap(old)}});
+  Array.prototype.forEach.call(document.querySelectorAll(".ref [data-l]"),function(b){b.onclick=function(){var i=+b.getAttribute("data-l");move(i,i-1)}});
+  Array.prototype.forEach.call(document.querySelectorAll(".ref [data-r]"),function(b){b.onclick=function(){var i=+b.getAttribute("data-r");move(i,i+1)}});
+  Array.prototype.forEach.call(document.querySelectorAll(".ref [data-t]"),function(b){b.onclick=function(){insertText("@Image"+b.getAttribute("data-t"))}});
+  drawTags();
+}
+/* shows which tags in the prompt point at a photo, and catches ones that don't */
+function badTags(){var bad=[],m,re=new RegExp(TAG.source,"gi"),t=$("#prompt").value;while((m=re.exec(t)))if(+m[1]<1||+m[1]>REFS.length)bad.push(m[0]);return bad}
+function drawTags(){
+  var t=$("#prompt").value,re=new RegExp(TAG.source,"gi"),seen={},m,h="";
+  while((m=re.exec(t))){var k=m[0].toLowerCase();if(seen[k])continue;seen[k]=1;var ok=+m[1]>=1&&+m[1]<=REFS.length;h+='<span class="'+(ok?"ok":"no")+'">@Image'+m[1]+(ok?"":" has no photo")+'</span>'}
+  $("#tags").innerHTML=h?"Tags in your prompt: "+h:"";
+}
+$("#prompt").addEventListener("input",drawTags);
+$("#addImg").onclick=function(){$("#refImgs").click()};
+$("#refImgs").onchange=function(){addRefs(this.files,false);this.value=""};
+var pb=$("#pbox"),ta0=$("#prompt");
+ta0.addEventListener("dragover",function(e){if(e.dataTransfer.types.indexOf("Files")>=0){e.preventDefault();pb.classList.add("on")}});
+ta0.addEventListener("dragleave",function(){pb.classList.remove("on")});
+ta0.addEventListener("drop",function(e){if(!e.dataTransfer.files||!e.dataTransfer.files.length)return;e.preventDefault();pb.classList.remove("on");
+  /* put the cursor where the photo was dropped */
+  if(document.caretPositionFromPoint){var cp=document.caretPositionFromPoint(e.clientX,e.clientY);if(cp&&cp.offsetNode===ta0){ta0.setSelectionRange(cp.offset,cp.offset)}}
+  addRefs(e.dataTransfer.files,true)});
+ta0.addEventListener("paste",function(e){var fs=[];var it=e.clipboardData&&e.clipboardData.items||[];for(var i=0;i<it.length;i++)if(it[i].kind==="file"){var f=it[i].getAsFile();if(f&&/^image\//.test(f.type))fs.push(f)}if(fs.length){e.preventDefault();addRefs(fs,true)}});
+$("#refs").addEventListener("dragover",function(e){if(e.dataTransfer.types.indexOf("Files")>=0)e.preventDefault()});
+$("#refs").addEventListener("drop",function(e){if(e.dataTransfer.files&&e.dataTransfer.files.length){e.preventDefault();addRefs(e.dataTransfer.files,false)}});
+
 /* ---------- ArtCraft ---------- */
 $("#model").onchange=function(){$("#modelCustom").hidden=this.value!=="__custom"};
 function model(){var m=$("#model").value;return m==="__custom"?$("#modelCustom").value.trim():m}
@@ -318,6 +390,8 @@ async function uploadClip(blob,ext){
 $("#gen").onclick=async function(){
   if(!CUR)return;var p=$("#prompt").value.trim(),m=model();
   if(!p){msg("#fixMsg","warn","Write a prompt first.");return}
+  var bt=badTags();if(bt.length){msg("#fixMsg","warn","Your prompt mentions "+esc(bt.join(", "))+" but there "+(REFS.length===1?"is only 1 photo":"are "+REFS.length+" photos")+". Add the photo or fix the tag.");return}
+  p=p.replace(TAG,function(m,n){return "@Image"+n}).replace(/@video1\b/gi,"@Video1");
   if(!m){msg("#fixMsg","warn","Choose a model.");return}
   var len=TOUT-TIN,dur=Math.max(2,Math.min(30,parseInt($("#dur").value,10)||5));
   if(len>15.05&&!confirm("The reference part is "+len.toFixed(1)+"s long. Seedance may reject reference videos longer than 15 seconds. Continue anyway?"))return;
@@ -331,11 +405,15 @@ $("#gen").onclick=async function(){
     if(blob.size>25*1048576)throw new Error("The clip is "+(blob.size/1048576).toFixed(1)+" MB; the limit is 25 MB. Trim it shorter.");
     msg("#fixMsg","info","Uploading the reference clip to ArtCraft…");$("#genBar i").style.width="15%";
     var body={model:m,idempotency_token:uuid(),prompt:p,duration_seconds:dur,aspect_ratio:$("#ar").value,resolution:$("#res").value,generate_audio:$("#audio").checked};
-    var fl=$("#refImgs").files,vtok=await uploadToArtcraft(blob,"video","reference.mp4"),vurl="";
+    var fl=REFS.map(function(r){return r.file}),vtok=await uploadToArtcraft(blob,"video","reference.mp4"),vurl="";
     if(vtok){
       body.reference_video_media_tokens=[vtok];
       var itoks=[];for(var i=0;i<fl.length;i++)itoks.push(await uploadToArtcraft(fl[i],"image",fl[i].name||"ref.png"));
-      if(itoks.length)body.reference_image_media_tokens=itoks.filter(Boolean);
+      if(itoks.length&&itoks.every(Boolean))body.reference_image_media_tokens=itoks;
+      else if(itoks.length){/* photo upload route unavailable: host the photos here instead, in the same order */
+        var iu=[];for(var j=0;j<fl.length;j++){var e2=/png/.test(fl[j].type)?"png":/webp/.test(fl[j].type)?"webp":"jpg";iu.push(await uploadClip(fl[j],e2))}
+        body.reference_image_urls=iu;for(var w2=60;w2>0;w2-=5){msg("#fixMsg","info","Making the photos reachable for ArtCraft… "+w2+"s");await new Promise(function(x){setTimeout(x,5000)})}
+      }
     }else{
       /* fallback: host the files on this site; wait so they are reachable worldwide before ArtCraft downloads them */
       vurl=await uploadClip(blob,"mp4");var imgs=[];
