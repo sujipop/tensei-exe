@@ -1346,7 +1346,7 @@ function attach(url,tk,done){
   loadHls(function(){
     if(tk!==token)return;
     if(window.Hls&&Hls.isSupported()){
-      hls=new Hls();hls.loadSource(url);hls.attachMedia(V);hls.on(Hls.Events.MANIFEST_PARSED,done);
+      hls=new Hls({abrEwmaDefaultEstimate:4000000});hls.loadSource(url);hls.attachMedia(V);hls.on(Hls.Events.MANIFEST_PARSED,done);
       hls.on(Hls.Events.ERROR,function(_,d){
         if(tk!==token||!d||!d.fatal)return;
         var code=d.response&&d.response.code;
