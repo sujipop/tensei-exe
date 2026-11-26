@@ -174,7 +174,7 @@ window.SERIES = [
       { title: "Episode 10", video: "https://vz-30b87a01-407.b-cdn.net/19edbe4b-75ce-4391-bd73-08467e9437f8/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/19edbe4b-75ce-4391-bd73-08467e9437f8/thumbnail_2590fb9a.jpg", length: "" },
       { title: "Episode 11", video: "https://vz-30b87a01-407.b-cdn.net/1df1889a-9fea-4867-bc14-ff35dbc3045f/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/1df1889a-9fea-4867-bc14-ff35dbc3045f/thumbnail.jpg", length: "" },
       { title: "Episode 12", video: "https://vz-30b87a01-407.b-cdn.net/fe76f6e9-939f-4646-a48e-126083502daa/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/fe76f6e9-939f-4646-a48e-126083502daa/thumbnail.jpg", length: "" },
-      { title: "Episode 13", video: "https://vz-30b87a01-407.b-cdn.net/d9921e9d-7c6d-4b4a-8081-fd2bf82abcfe/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/d9921e9d-7c6d-4b4a-8081-fd2bf82abcfe/thumbnail.jpg", length: "" },
+      { title: "Episode 13", video: "https://vz-30b87a01-407.b-cdn.net/d9921e9d-7c6d-4b4a-8081-fd2bf82abcfe/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/d9921e9d-7c6d-4b4a-8081-fd2bf82abcfe/thumbnail_2c7e273f.jpg", length: "" },
       { title: "Episode 14", video: "https://vz-30b87a01-407.b-cdn.net/26a926f2-a44a-43fe-889f-2925703d75dd/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/d9921e9d-7c6d-4b4a-8081-fd2bf82abcfe/thumbnail_2c7e273f.jpg", length: "" },
       { title: "Episode 15", isNew: true, video: "https://vz-30b87a01-407.b-cdn.net/1a2731aa-c77e-4def-b153-27aee85c3730/playlist.m3u8", thumb: "https://vz-30b87a01-407.b-cdn.net/1a2731aa-c77e-4def-b153-27aee85c3730/thumbnail_29d1ede3.jpg", length: "" }
     ]
